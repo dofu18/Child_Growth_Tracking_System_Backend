@@ -1,0 +1,15 @@
+[Bb]in/
+
+[Oo]bj/
+
+./appsettings.Development.json
+
+.vs/
+
+appsettings.json
+
+ControllerLayer.csproj.user
+
+*.sln
+
+*.env
