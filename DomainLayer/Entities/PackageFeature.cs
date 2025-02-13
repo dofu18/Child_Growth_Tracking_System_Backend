@@ -10,5 +10,10 @@ namespace DomainLayer.Entities
     {
         public Guid PackageId { get; set; }
         public Guid FeatureId { get; set; }
+
+
+        //Navigation Properties
+        public Package Package { get; set; }
+        public Feature Feature { get; set; }
     }
 }

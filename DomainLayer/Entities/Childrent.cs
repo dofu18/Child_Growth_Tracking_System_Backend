@@ -11,12 +11,12 @@ namespace DomainLayer.Entities
     {
         public Guid ParentId { get; set; }
         public string Name { get; set; }
-        public DateTime DoB {  get; set; }
+        public DateOnly DoB {  get; set; }
         public GenderEnum Gender { get; set; }
         public decimal Weight { get; set; }
         public decimal Height { get; set; }
         public decimal Bmi { get; set; }
-        public Guid BmiCategory { get; set; }
+        public Guid BmiCategoryId { get; set; }
         public decimal BmiPercentile { get; set; }
         public string Notes { get; set; }
         public GroupAgeEnum GroupAge { get; set; }

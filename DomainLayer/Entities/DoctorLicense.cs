@@ -15,7 +15,7 @@ namespace DomainLayer.Entities
         public string Metadata { get; set; }
         public string Specialize {  get; set; }
         public string ProfileImg {  get; set; }
-        public DoctorLicenseEnum Status { get; set; }
+        public DoctorLicenseStatusEnum Status { get; set; }
         public Guid UserId { get; set; }
 
         //Navigation Properties

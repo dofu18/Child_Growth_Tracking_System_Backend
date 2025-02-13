@@ -11,4 +11,8 @@
     <ProjectReference Include="..\InfrastructureLayer\InfrastructureLayer.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ResponseCode\" />
+  </ItemGroup>
+
 </Project>

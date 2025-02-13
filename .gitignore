@@ -6,8 +6,6 @@
 
 .vs/
 
-appsettings.json
-
 ControllerLayer.csproj.user
 
 *.env

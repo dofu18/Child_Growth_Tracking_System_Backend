@@ -30,11 +30,12 @@ namespace DomainLayer.Enum
             Under2,
             From2to19,
         }
-        public enum DoctorLicenseEnum
+        public enum DoctorLicenseStatusEnum
         {
             Published,
             Archived,
             Disable,
+            Pending,
         }
         public enum ConsultationRequestStatusEnum
         {
@@ -48,6 +49,12 @@ namespace DomainLayer.Enum
             Pending,
             Failed,
             Successfully,
+        }
+        public enum UserPackageStatusEnum
+        {
+            OnGoing,
+            Cancel,
+            Expired,
         }
     }
 }
