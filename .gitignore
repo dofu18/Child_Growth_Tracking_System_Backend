@@ -10,6 +10,4 @@ appsettings.json
 
 ControllerLayer.csproj.user
 
-*.sln
-
 *.env
