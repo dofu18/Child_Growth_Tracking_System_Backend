@@ -56,5 +56,10 @@ namespace DomainLayer.Enum
             Cancel,
             Expired,
         }
+        public enum TestEnum
+        {
+            alo,
+            ola,
+        }
     }
 }
