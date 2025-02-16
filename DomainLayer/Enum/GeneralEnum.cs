@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -56,10 +57,15 @@ namespace DomainLayer.Enum
             Cancel,
             Expired,
         }
-        public enum TestEnum
+
+        public enum IdType
         {
-            alo,
-            ola,
+            [Description("Id")]
+            Id = 1,
+            [Description("User Id")]
+            UserId = 2,
+            [Description("Children Id")]
+            ChildrenId = 3,
         }
     }
 }
