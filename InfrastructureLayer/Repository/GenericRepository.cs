@@ -26,12 +26,14 @@ namespace InfrastructureLayer.Repository
             throw new NotImplementedException();
         }
 
-        public virtual async Task CreateAsync(T entity)
+        public virtual async Task<T> CreateAsync(T entity)
         {
             entity.CreatedAt = DateTime.UtcNow;
             entity.UpdatedAt = DateTime.UtcNow;
             await dbSet.AddAsync(entity);
             await _context.SaveChangesAsync();
+
+            return entity;
         }
 
         public virtual async Task CreateRangeAsync(IEnumerable<T> entities)
@@ -111,11 +113,12 @@ namespace InfrastructureLayer.Repository
             return await dbSet.AsQueryable().AsNoTracking().Where(predicate).SumAsync(sumExpression);
         }
 
-        public virtual async Task UpdateAsync(T updated)
+        public virtual async Task<T> UpdateAsync(T updated)
         {
             updated.UpdatedAt = DateTime.UtcNow;
             _context.Attach(updated).State = EntityState.Modified;
             await _context.SaveChangesAsync();
+            return updated;
         }
 
         public virtual async Task UpdateRangeAsync(IEnumerable<T> entities)
