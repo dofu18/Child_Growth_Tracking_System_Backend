@@ -1,17 +1,53 @@
 using ApplicationLayer.Service;
+using InfrastructureLayer.Core.Cache;
+using InfrastructureLayer.Core.Crypto;
+using InfrastructureLayer.Core.JWT;
+using InfrastructureLayer.Core.Mail;
 using InfrastructureLayer.Database;
 using InfrastructureLayer.Repository;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 var CORS = "AllowAllOrigins";
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication("Bearer").AddBearerToken();
 builder.Services.AddHttpContextAccessor();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Child Growth System API", Version = "v1" });
+
+    // Add a bearer token to Swagger
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer"
+    });
+
+    // Require the bearer token for all API operations
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+      {
+          new OpenApiSecurityScheme
+          {
+              Reference = new OpenApiReference
+              {
+                  Type = ReferenceType.SecurityScheme,
+                  Id = "Bearer"
+              }
+          },
+          new string[] {}
+      }
+    });
+});
 
 // Configure CORS
 builder.Services.AddCors(options =>
@@ -32,14 +68,31 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ChildGrowthDbContext>(options =>
     options.UseNpgsql(connectionString));
 
+//Redis
+builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("RedisConnection") ?? throw new ArgumentNullException("RedisConnection")));
+
+
 // Add AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+//Core
+builder.Services.AddSingleton<IJwtService, JwtService>();
+builder.Services.AddSingleton<ICryptoService, CryptoService>();
+builder.Services.AddScoped<ICacheService, CacheService>();
+
+var smtpUsername = builder.Configuration.GetValue<string>("SMTPEmail") ?? "smtp_email";
+var smtpPassword = builder.Configuration.GetValue<string>("SMTPPassword") ?? "smtp_password";
+builder.Services.AddSingleton<IMailService>(new MailService("smtp.gmail.com", 587, smtpUsername, smtpPassword));
 
 // Register Services
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IBmiCategoryService, BmiCategoryService>();
+<<<<<<< HEAD
 builder.Services.AddScoped<IChildrenService, ChildrenService>();
 
+=======
+builder.Services.AddScoped<IAuthService, AuthService>();
+>>>>>>> 947c9ecbd79f84b3bd0e3715238ea359cc79874d
 
 var app = builder.Build();
 
