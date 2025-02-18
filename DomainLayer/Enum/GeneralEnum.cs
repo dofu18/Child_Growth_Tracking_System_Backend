@@ -20,6 +20,7 @@ namespace DomainLayer.Enum
             Active,
             Disable,
             Archived,
+            NotVerified,
         }
         public enum GenderEnum
         {
@@ -57,7 +58,11 @@ namespace DomainLayer.Enum
             Cancel,
             Expired,
         }
-
+        public enum AuthTypeEnum
+        {
+            Email,
+            Google,
+        }
         public enum IdType
         {
             [Description("Id")]
