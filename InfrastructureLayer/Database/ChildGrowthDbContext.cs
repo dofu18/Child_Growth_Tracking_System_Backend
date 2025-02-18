@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DomainLayer.Constants;
 using DomainLayer.Entities;
 using DomainLayer.Enum;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
@@ -194,6 +195,31 @@ namespace InfrastructureLayer.Database
                 e.Property(x => x.Status).HasConversion<string>().HasDefaultValue(RoleStatusEnum.Pending);
 
             });
+            //modelBuilder.Entity<Role>().HasData(new Role
+            //{
+            //    Id = Guid.Parse(GeneralConst.DEFAULT_GUID),
+            //    RoleName = "Admin",
+            //    Description = "This person have fully permission of system",
+            //    Status = RoleStatusEnum.Active,
+            //}, new Role
+            //{
+            //    Id = Guid.Parse(GeneralConst.ROLE_STAFF_GUID),
+            //    RoleName = "Staff",
+            //    Description = "This person have under permission of admin",
+            //    Status = RoleStatusEnum.Active,
+            //}, new Role
+            //{
+            //    Id = Guid.Parse(GeneralConst.ROLE_USER_GUID),
+            //    RoleName = "User",
+            //    Description = "This person have limited permission of system",
+            //    Status = RoleStatusEnum.Active,
+            //}, new Role
+            //{
+            //    Id = Guid.Parse(GeneralConst.ROLE_DOCTOR_GUID),
+            //    RoleName = "Doctor",
+            //    Description = "This person have permission to response user",
+            //    Status = RoleStatusEnum.Active,
+            //});
             modelBuilder.Entity<SharingProfile>(e =>
             {
                 e.HasKey(x => x.Id);
@@ -231,13 +257,14 @@ namespace InfrastructureLayer.Database
                 e.HasKey(x => x.Id);
                 e.Property(x => x.Name).IsRequired().HasMaxLength(50);
                 e.Property(x => x.UserName).IsRequired().HasMaxLength(40);
-                e.Property(x => x.Password).IsRequired().HasMaxLength(32);
-                e.Property(x => x.Phone).IsRequired().HasMaxLength(11);
+                e.Property(x => x.Password).IsRequired(false).HasMaxLength(200);
+                e.Property(x => x.Phone).IsRequired(false).HasMaxLength(11);
                 e.HasIndex(x => x.Email).IsUnique();
                 e.Property(x => x.LastLogin).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
-                e.Property(x => x.Address).IsRequired().HasMaxLength(200);
-                e.Property(x => x.Status).HasConversion<string>().HasDefaultValue(UserStatusEnum.Active);
-                e.HasOne(x => x.Package).WithMany().HasForeignKey(x => x.PackageId).OnDelete(DeleteBehavior.Cascade);
+                e.Property(x => x.Address).IsRequired(false).HasMaxLength(200);
+                e.Property(x => x.Avatar).IsRequired(false).HasMaxLength(1000);
+                e.Property(x => x.Status).HasConversion<string>().HasDefaultValue(UserStatusEnum.NotVerified);
+                e.Property(x => x.AuthType).HasConversion<string>().HasDefaultValue(AuthTypeEnum.Email);
                 e.HasOne(x => x.Role).WithMany().HasForeignKey(x => x.RoleId).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
