@@ -17,11 +17,11 @@ namespace DomainLayer.Entities
         public string Phone {  get; set; }
         public DateTime LastLogin {  get; set; }
         public string Address { get; set; }
-        public Guid PackageId { get; set; }
         public UserStatusEnum Status { get; set; }
+        public AuthTypeEnum AuthType { get; set; }
+        public string Avatar {  get; set; }
 
         //Navigation Properties
         public Role Role { get; set; }
-        public Package Package { get; set; }
     }
 }

@@ -10,13 +10,13 @@ namespace InfrastructureLayer.Repository
 {
     public interface IGenericRepository<T>
     {
-        Task CreateAsync(T entity);
+        Task<T> CreateAsync(T entity);
         Task CreateRangeAsync(IEnumerable<T> entities);
         Task<List<T>> ListAsync(params string[] navigationProperties);
         Task<T> FindByIdAsync(Guid id, params string[] navigationProperties);
         Task<T> FoundOrThrowAsync(Guid id, string message = Constants.Errors.NOT_EXIST_ERROR, params string[] navigationProperties);
         Task<IList<T>> WhereAsync(Expression<Func<T, bool>> predicate, params string[] navigationProperties);
-        Task UpdateAsync(T updated);
+        Task<T> UpdateAsync(T updated);
         Task<T> DeleteAsync(Guid id);
         Task DeleteAsync(T _entity);
         Task DeleteRangeAsync(IEnumerable<T> entities);
