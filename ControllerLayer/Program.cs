@@ -38,6 +38,7 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 // Register Services
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IBmiCategoryService, BmiCategoryService>();
+builder.Services.AddScoped<IChildrenService, ChildrenService>();
 
 
 var app = builder.Build();
