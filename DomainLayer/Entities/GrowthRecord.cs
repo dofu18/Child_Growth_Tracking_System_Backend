@@ -15,9 +15,10 @@ namespace DomainLayer.Entities
         public Guid BmiCategory { get; set; }
         public decimal BmiPercentile { get; set; }
         public string Notes { get; set; }
+        public Guid CreatedBy { get; set; }
         
         //Navigation Properties
-        public User Children { get; set; }
+        public Children Children { get; set; }
         public User CreatedUser { get; set; }
     }
 }

@@ -7,6 +7,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Repository\NewFolder\**" />
+	  <EmbeddedResource Remove="Repository\NewFolder\**" />
+	  <None Remove="Repository\NewFolder\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="BCrypt.Net" Version="0.1.0" />
 		<PackageReference Include="MailKit" Version="4.10.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
@@ -28,10 +34,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\DomainLayer\DomainLayer.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Repository\NewFolder\" />
 	</ItemGroup>
 
 </Project>

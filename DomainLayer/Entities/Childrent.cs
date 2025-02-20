@@ -20,6 +20,7 @@ namespace DomainLayer.Entities
         public decimal BmiPercentile { get; set; }
         public string Notes { get; set; }
         public GroupAgeEnum GroupAge { get; set; }
+        public ChildrentStatusEnum Status { get; set; }
 
         public User Parent { get; set; }
         public BmiCategory BmiCategory { get; set; }
