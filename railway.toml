@@ -1,7 +1,7 @@
 [build]
 builder = "dockerfile"
-dockerfilePath = "./SWP391_Child_Growth_BE/Dockerfile"
+dockerfilePath = "./Child_Growth_Tracking_System_Backend/Dockerfile"
 
 [deploy]
-startCommand = "dotnet", "ControllerLayer.dll"
+startCommand = "dotnet ControllerLayer.dll"
 restartPolicyType = "always"
