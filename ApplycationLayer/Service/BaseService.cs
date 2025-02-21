@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using DomainLayer.Constants;
+using InfrastructureLayer.Core.JWT;
 using Microsoft.AspNetCore.Http;
 
 namespace ApplicationLayer.Service
@@ -17,6 +19,14 @@ namespace ApplicationLayer.Service
         {
             _mapper = mapper;
             _httpCtx = httpCtx;
+        }
+
+        protected Payload? ExtractPayload()
+        {
+            var ctx = _httpCtx.HttpContext;
+            if (ctx == null) return null;
+            var payload = ctx.Items[JwtConst.PAYLOAD_KEY] as Payload;
+            return payload;
         }
     }
 }
