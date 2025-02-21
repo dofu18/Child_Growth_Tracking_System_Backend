@@ -72,5 +72,24 @@ namespace DomainLayer.Enum
             [Description("Children Id")]
             ChildrenId = 3,
         }
+        public enum ChildrentStatusEnum
+        {
+            Active,
+            Disable,
+            Archived,
+        }
+        public enum RatingFeedbackStatusEnum
+        {
+            Publish,
+            Archived,
+            Disable
+        }
+        public enum PackageStatusEnum
+        {
+            Pending,
+            Published,
+            Archived,
+            Deleted,
+        }
     }
 }

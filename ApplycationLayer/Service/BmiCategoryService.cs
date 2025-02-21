@@ -32,7 +32,6 @@ namespace ApplicationLayer.Service
         public async Task<IActionResult> Create(BmiCategoryCreateDto dto)
         {
             var bmiCategory = _mapper.Map<BmiCategory>(dto);
-            bmiCategory.CreatedBy = new Guid("11111111-1111-1111-1111-111111111111");
             bmiCategory.CreatedAt = DateTime.Now;
             bmiCategory.UpdatedAt = DateTime.Now;
             await _bmiCategoryRepo.CreateAsync(bmiCategory);

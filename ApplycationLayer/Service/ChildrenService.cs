@@ -134,7 +134,7 @@ namespace ApplicationLayer.Service
                 return ErrorResp.Forbidden("You do not have permission to hide this child's information");
             }
 
-            child.IsHidden = isHidden;
+            //child.IsHidden = isHidden;
             //thiếu phần này bên children.cs
             // public bool IsHidden { get; set; } = false;
 
@@ -160,10 +160,7 @@ namespace ApplicationLayer.Service
             {
                 Id = Guid.NewGuid(),
                 UserId = userId,
-                ChildrentId = dto.ChildId,
-                RecipientEmail = dto.RecipientEmail,
-                Message = dto.Message,
-                CreatedAt = DateTime.Now
+                ChildrentId = dto.ChildId
             };
 
             await _sharingRepo.CreateAsync(sharingProfile);

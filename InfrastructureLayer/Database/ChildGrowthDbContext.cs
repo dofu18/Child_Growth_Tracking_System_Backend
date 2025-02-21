@@ -58,7 +58,7 @@ namespace InfrastructureLayer.Database
                 e.HasKey(x => x.Id);
                 e.HasOne(x => x.Children).WithMany().HasForeignKey(x => x.ChildrentId).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.AlertDate).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
-                e.Property(x => x.Message).IsRequired().HasMaxLength(500);
+                e.Property(x => x.Message).IsRequired(false).HasMaxLength(500);
                 e.HasOne(x => x.ReceivedUser).WithMany().HasForeignKey(x => x.ReveivedUserId).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.IsRead).IsRequired();
             });
@@ -78,13 +78,14 @@ namespace InfrastructureLayer.Database
                 e.HasOne(x => x.Parent).WithMany().HasForeignKey(x => x.ParentId).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.Name).IsRequired().HasMaxLength(50);
                 e.Property(x => x.DoB).IsRequired().HasDefaultValueSql("CURRENT_DATE");
+                e.Property(x => x.Status).HasConversion<string>().HasDefaultValue(ChildrentStatusEnum.Active);
                 e.Property(x => x.Gender).HasConversion<string>().HasDefaultValue(GenderEnum.Male);
                 e.Property(x => x.Weight).IsRequired();
                 e.Property(x => x.Height).IsRequired();
                 e.Property(x => x.Bmi).IsRequired();
                 e.HasOne(x => x.BmiCategory).WithMany().HasForeignKey(x => x.BmiCategoryId).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.BmiPercentile).IsRequired();
-                e.Property(x => x.Notes).IsRequired().HasMaxLength(500);
+                e.Property(x => x.Notes).IsRequired(false).HasMaxLength(500);
                 e.Property(x => x.GroupAge).HasConversion<string>().HasDefaultValue(GroupAgeEnum.From2to19);
                 e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
                 e.Property(x => x.UpdatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
@@ -95,10 +96,12 @@ namespace InfrastructureLayer.Database
                 e.HasKey(x => x.Id);
                 e.HasOne(x => x.Children).WithMany().HasForeignKey(x => x.ChildrentId).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.RequestDate).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
-                e.Property(x => x.Description).IsRequired().HasMaxLength(500);
+                e.Property(x => x.Title).IsRequired().HasMaxLength(100);
+                e.Property(x => x.Description).IsRequired(false).HasMaxLength(500);
                 e.Property(x => x.Status).HasConversion<string>().HasDefaultValue(ConsultationRequestStatusEnum.Pending);
-                e.Property(x => x.Attachments).IsRequired().HasMaxLength(500);
+                e.Property(x => x.Attachments).IsRequired(false).HasMaxLength(500);
                 e.HasOne(x => x.UserRequest).WithMany().HasForeignKey(x => x.UserRequestId).OnDelete(DeleteBehavior.Cascade);
+                e.HasOne(x => x.DoctorReceive).WithMany().HasForeignKey(x => x.DoctorReceiveId).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.UpdatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             });
@@ -109,19 +112,19 @@ namespace InfrastructureLayer.Database
                 e.HasOne(x => x.Doctor).WithMany().HasForeignKey(x => x.DoctorId).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.ResponseDate).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
                 e.Property(x => x.Title).IsRequired().HasMaxLength(100);
-                e.Property(x => x.Content).IsRequired().HasMaxLength(200);
-                e.Property(x => x.Attachments).IsRequired().HasMaxLength(500);
+                e.Property(x => x.Content).IsRequired(false).HasMaxLength(200);
+                e.Property(x => x.Attachments).IsRequired(false).HasMaxLength(500);
 
             });
             modelBuilder.Entity<DoctorLicense>(e =>
             {
                 e.HasKey(x => x.Id);
-                e.Property(x => x.Certificate).IsRequired().HasMaxLength(200);
+                e.Property(x => x.Certificate).IsRequired(false).HasMaxLength(200);
                 e.Property(x => x.LicenseNumber).IsRequired().HasMaxLength(100);
-                e.Property(x => x.Biography).IsRequired().HasMaxLength(100);
-                e.Property(x => x.Metadata).IsRequired().HasMaxLength(500);
-                e.Property(x => x.ProfileImg).IsRequired().HasMaxLength(500);
-                e.Property(x => x.Specialize).IsRequired().HasMaxLength(200);
+                e.Property(x => x.Biography).IsRequired(false).HasMaxLength(100);
+                e.Property(x => x.Metadata).IsRequired(false).HasMaxLength(500);
+                e.Property(x => x.ProfileImg).IsRequired(false).HasMaxLength(500);
+                e.Property(x => x.Specialize).IsRequired(false).HasMaxLength(200);
                 e.Property(x => x.Status).HasConversion<string>().HasDefaultValue(DoctorLicenseStatusEnum.Pending);
                 e.HasOne(x => x.User).WithOne().HasForeignKey<DoctorLicense>(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
@@ -138,7 +141,7 @@ namespace InfrastructureLayer.Database
             {
                 e.HasKey(x => x.Id);
                 e.Property(x => x.FeatureName).IsRequired().HasMaxLength(50);
-                e.Property(x => x.Description).IsRequired().HasMaxLength(300);
+                e.Property(x => x.Description).IsRequired(false).HasMaxLength(300);
                 e.HasOne(x => x.CreatedUser).WithMany().HasForeignKey(x => x.CreatedBy).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
                 e.Property(x => x.UpdatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
@@ -153,7 +156,7 @@ namespace InfrastructureLayer.Database
                 e.Property(x => x.Bmi).IsRequired();
                 //e.HasOne(x => x.BmiCategory).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.BmiPercentile).IsRequired();
-                e.Property(x => x.Notes).IsRequired().HasMaxLength(500);
+                e.Property(x => x.Notes).IsRequired(false).HasMaxLength(500);
                 e.HasOne(x => x.CreatedUser).WithMany().HasForeignKey(x => x.CreatedBy).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -162,11 +165,12 @@ namespace InfrastructureLayer.Database
             {
                 e.HasKey(x => x.Id);
                 e.Property(x => x.PackageName).IsRequired().HasMaxLength(100);
-                e.Property(x => x.Description).IsRequired().HasMaxLength(200);
+                e.Property(x => x.Description).IsRequired(false).HasMaxLength(200);
                 e.Property(x => x.Price).IsRequired();
                 e.Property(x => x.DurationMonths).IsRequired();
                 e.Property(x => x.TrialPeriodDays).IsRequired();
                 e.Property(x => x.MaxChildrentAllowed).IsRequired();
+                e.Property(x => x.Status).HasConversion<string>().HasDefaultValue(PackageStatusEnum.Pending);
                 e.HasOne(x => x.CreatedUser).WithMany().HasForeignKey(x => x.CreatedBy).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
                 e.Property(x => x.UpdatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
@@ -183,7 +187,8 @@ namespace InfrastructureLayer.Database
                 e.HasKey(x => x.Id);
                 e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.Rating).IsRequired();
-                e.Property(x => x.Commnet).IsRequired(false).HasMaxLength(500);
+                e.Property(x => x.Feedback).IsRequired(false).HasMaxLength(500);
+                e.Property(x => x.Status).HasConversion<string>().HasDefaultValue(RatingFeedbackStatusEnum.Publish);
                 e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
                 e.Property(x => x.UpdatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
@@ -191,7 +196,7 @@ namespace InfrastructureLayer.Database
             {
                 e.HasKey(x => x.Id);
                 e.Property(x => x.RoleName).IsRequired().HasMaxLength(20);
-                e.Property(x => x.Description).IsRequired().HasMaxLength(100);
+                e.Property(x => x.Description).IsRequired(false).HasMaxLength(100);
                 e.Property(x => x.Status).HasConversion<string>().HasDefaultValue(RoleStatusEnum.Pending);
 
             });
@@ -231,7 +236,7 @@ namespace InfrastructureLayer.Database
             {
                 e.HasKey(x => x.Id);
                 e.Property(x => x.Name).IsRequired().HasMaxLength(50);
-                e.Property(x => x.Description).IsRequired().HasMaxLength(200);
+                e.Property(x => x.Description).IsRequired(false).HasMaxLength(200);
                 e.HasOne(x => x.CreatedUser).WithMany().HasForeignKey(x => x.CreatedBy).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
                 e.Property(x => x.UpdatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");

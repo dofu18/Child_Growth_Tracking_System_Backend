@@ -5,6 +5,8 @@ using InfrastructureLayer.Core.JWT;
 using InfrastructureLayer.Core.Mail;
 using InfrastructureLayer.Database;
 using InfrastructureLayer.Repository;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
@@ -61,6 +63,19 @@ builder.Services.AddCors(options =>
                   .AllowAnyHeader();
         });
 });
+//Google OAuth
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+})
+.AddCookie()
+.AddGoogle(options =>
+{
+    options.ClientId = builder.Configuration.GetValue<string>("GoogleClientId") ?? throw new ArgumentNullException("GoogleClientId");
+    options.ClientSecret = builder.Configuration.GetValue<string>("GoogleClientSecret") ?? throw new ArgumentNullException("GoogleClientSecret");
+});
+
 // Get Connection String from appsettings.json
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
