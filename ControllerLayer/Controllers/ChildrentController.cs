@@ -40,5 +40,25 @@ namespace ControllerLayer.Controllers
         {
             return await _childrenService.Update(id, dto);
         }
+
+        [HttpDelete("id")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            _logger.LogInformation($"Delete children request received for ID: {id}");
+
+            return await _childrenService.Delete(id);
+        }
+
+        [HttpPost("{childId}")]
+        public async Task<IActionResult> HideChildren(Guid id, [FromBody] bool isHidden)
+        {
+            return await _childrenService.HideChildren(id, isHidden);
+        }
+
+        [HttpPost("share")]
+        public async Task<IActionResult> ShareProfile([FromBody] ShareProfileCreateDto dto)
+        {
+            return await _childrenService.ShareProfile(dto);
+        }
     }
 }

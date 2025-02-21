@@ -87,12 +87,8 @@ builder.Services.AddSingleton<IMailService>(new MailService("smtp.gmail.com", 58
 // Register Services
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IBmiCategoryService, BmiCategoryService>();
-<<<<<<< HEAD
 builder.Services.AddScoped<IChildrenService, ChildrenService>();
-
-=======
 builder.Services.AddScoped<IAuthService, AuthService>();
->>>>>>> 947c9ecbd79f84b3bd0e3715238ea359cc79874d
 
 var app = builder.Build();
 

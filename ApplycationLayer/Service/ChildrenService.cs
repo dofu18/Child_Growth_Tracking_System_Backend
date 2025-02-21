@@ -14,6 +14,9 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Text;
 using DomainLayer.Entities;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.Extensions.Logging;
+using DomainLayer.Enum;
 
 
 namespace ApplicationLayer.Service
@@ -24,15 +27,22 @@ namespace ApplicationLayer.Service
         Task<IActionResult> GetAll();
         Task<IActionResult> Update(Guid id, ChildrenUpdateDto dto);
         Task<IActionResult> GetChildByParent(Guid parentId);
+        Task<IActionResult> Delete(Guid id);
+        Task<IActionResult> HideChildren(Guid childId, bool isHidden);
+        Task<IActionResult> ShareProfile(ShareProfileCreateDto dto);
 
     }
     public class ChildrenService : BaseService, IChildrenService
     {
         private readonly IGenericRepository<Children> _childrenRepo;
+        private readonly IGenericRepository<SharingProfile> _sharingRepo;
+        private readonly ILogger<ChildrenService> _logger; 
 
-        public ChildrenService(IGenericRepository<Children> childrenRepo, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
+        public ChildrenService(IGenericRepository<Children> childrenRepo, IGenericRepository<SharingProfile> sharingRepo, IMapper mapper, IHttpContextAccessor httpCtx, ILogger<ChildrenService> logger) : base(mapper, httpCtx)
         {
             _childrenRepo = childrenRepo;
+            _sharingRepo = sharingRepo;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Create(ChildrenCreateDto dto)
@@ -42,7 +52,7 @@ namespace ApplicationLayer.Service
             //    return Unauthorized("User not authenticated");
 
             var childrent = _mapper.Map<Children>(dto);
-            childrent.ParentId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+            //childrent.ParentId = Guid.Parse("11111111-1111-1111-1111-111111111111");
             childrent.CreatedAt = DateTime.Now;
             childrent.UpdatedAt = DateTime.Now;
 
@@ -95,5 +105,73 @@ namespace ApplicationLayer.Service
 
             return SuccessResp.Ok(chidren);
         }
+
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var children = await _childrenRepo.FindByIdAsync(id);
+
+            if (children == null)
+            {
+                return ErrorResp.NotFound("Children Not Found");
+            }
+
+            await _childrenRepo.DeleteAsync(id);
+
+            return SuccessResp.Ok("Children information deleted successfully");
+        }
+
+        public async Task<IActionResult> HideChildren(Guid childId, bool isHidden)
+        {
+            var child = await _childrenRepo.FindByIdAsync(childId);
+            if (child == null)
+            {
+                return ErrorResp.NotFound("Children Not Found");
+            }
+
+            var userId = new Guid("11111111-1111-1111-1111-111111111111");
+            if (child.ParentId != userId)
+            {
+                return ErrorResp.Forbidden("You do not have permission to hide this child's information");
+            }
+
+            child.IsHidden = isHidden;
+            //thiếu phần này bên children.cs
+            // public bool IsHidden { get; set; } = false;
+
+            await _childrenRepo.UpdateAsync(child);
+
+            return SuccessResp.Ok(isHidden ? "Child information is now hidden." : "Child information is now visible.");
+        }
+
+        public async Task<IActionResult> ShareProfile(ShareProfileCreateDto dto)
+        {
+            _logger.LogInformation("Processing child profile sharing request...");
+
+            var child = await _childrenRepo.FindByIdAsync(dto.ChildId);
+            if (child == null)
+            {
+                _logger.LogWarning("Child profile not found, ID: {ChildId}", dto.ChildId);
+                return ErrorResp.NotFound("Child profile not found");
+            }
+
+            var userId = new Guid("11111111-1111-1111-1111-111111111111");
+
+            var sharingProfile = new SharingProfile
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                ChildrentId = dto.ChildId,
+                RecipientEmail = dto.RecipientEmail,
+                Message = dto.Message,
+                CreatedAt = DateTime.Now
+            };
+
+            await _sharingRepo.CreateAsync(sharingProfile);
+
+            _logger.LogInformation("Child information shared successfully. ID: {ChildId}, Recipient: {Email}", dto.ChildId, dto.RecipientEmail);
+
+            return SuccessResp.Ok("Child's development information has been shared and stored.");
+        }
+
     }
 }
