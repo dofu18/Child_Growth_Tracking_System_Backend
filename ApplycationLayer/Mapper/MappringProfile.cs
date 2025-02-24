@@ -21,6 +21,7 @@ namespace ApplicationLayer.Mapper
             //BmiCategory
             CreateMap<BmiCategory, BmiCategoryCreateDto>().ReverseMap();
 
+            //Children
             CreateMap<Children, ChildrenCreateDto>().ReverseMap();
             CreateMap<Children, ChildrentResponseDto>();
             CreateMap<Children, ChildrenUpdateDto>().ReverseMap();

@@ -17,6 +17,8 @@ using DomainLayer.Entities;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Logging;
 using DomainLayer.Enum;
+using Org.BouncyCastle.Asn1.Ocsp;
+using static DomainLayer.Enum.GeneralEnum;
 
 
 namespace ApplicationLayer.Service
@@ -55,6 +57,7 @@ namespace ApplicationLayer.Service
             //childrent.ParentId = Guid.Parse("11111111-1111-1111-1111-111111111111");
             childrent.CreatedAt = DateTime.Now;
             childrent.UpdatedAt = DateTime.Now;
+            childrent.Status = ChildrentStatusEnum.Active;
 
             await _childrenRepo.CreateAsync(childrent);
             return SuccessResp.Created("Children information added successfully.");
@@ -62,11 +65,6 @@ namespace ApplicationLayer.Service
 
         public async Task<IActionResult> GetAll()
         {
-            //var userIdClaim = _httpCtx.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            //if (string.IsNullOrEmpty(userIdClaim))
-            //    return Unauthorized("User not authenticated");
-
-            //var userId = new Guid(userIdClaim);
             var chidren = await _childrenRepo.ListAsync();
             var result = _mapper.Map<List<ChildrentResponseDto>>(chidren);
 
@@ -95,7 +93,7 @@ namespace ApplicationLayer.Service
             //if (string.IsNullOrEmpty(userIdClaim))
             //    return Unauthorized("User not authenticated");
 
-            var chidren = await _childrenRepo.WhereAsync(c => c.ParentId == parentId);
+            var chidren = await _childrenRepo.WhereAsync(c => c.ParentId == parentId && c.Status == ChildrentStatusEnum.Active);
 
             if (!chidren.Any())
             {
@@ -134,9 +132,7 @@ namespace ApplicationLayer.Service
                 return ErrorResp.Forbidden("You do not have permission to hide this child's information");
             }
 
-            //child.IsHidden = isHidden;
-            //thiếu phần này bên children.cs
-            // public bool IsHidden { get; set; } = false;
+            child.Status = isHidden ? ChildrentStatusEnum.Disable : ChildrentStatusEnum.Active;
 
             await _childrenRepo.UpdateAsync(child);
 
@@ -154,7 +150,11 @@ namespace ApplicationLayer.Service
                 return ErrorResp.NotFound("Child profile not found");
             }
 
-            var userId = new Guid("11111111-1111-1111-1111-111111111111");
+            //var user = GetUserByEmail => User(id,....)
+            //var userId = user.Id;  
+
+
+            var userId = new Guid("11111111-1111-1111-1111-111111111111");  
 
             var sharingProfile = new SharingProfile
             {

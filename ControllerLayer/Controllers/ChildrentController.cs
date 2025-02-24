@@ -24,6 +24,7 @@ namespace ControllerLayer.Controllers
         public async Task<IActionResult> Create([FromBody] ChildrenCreateDto dto)
         {
             _logger.LogInformation("Create Children request received");
+
             return await _childrenService.Create(dto);
         }
 
