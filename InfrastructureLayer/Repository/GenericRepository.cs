@@ -21,9 +21,9 @@ namespace InfrastructureLayer.Repository
             dbSet = context.Set<T>();
         }
 
-        public Task<int> CountAsync()
+        public async Task<int> CountAsync()
         {
-            throw new NotImplementedException();
+            return await dbSet.AsNoTracking().CountAsync();
         }
 
         public virtual async Task<T> CreateAsync(T entity)
@@ -127,14 +127,14 @@ namespace InfrastructureLayer.Repository
             await _context.SaveChangesAsync();
         }
 
-        public virtual async Task<IList<T>> WhereAsync(Expression<Func<T, bool>> predicate, params string[] navigationProperties)
+        public virtual async Task<List<T>> WhereAsync(Expression<Func<T, bool>> predicate, params string[] navigationProperties)
         {
             List<T> list;
             var query = dbSet.AsQueryable();
             foreach (string navigationProperty in navigationProperties)
                 query = query.Include(navigationProperty);//got to reaffect it.
 
-            list = await query.Where(predicate).AsNoTracking().ToListAsync<T>();
+            list = await query.Where(predicate).ToListAsync<T>();
             return list;
         }
 
