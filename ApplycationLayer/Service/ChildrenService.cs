@@ -14,6 +14,13 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Text;
 using DomainLayer.Entities;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.Extensions.Logging;
+using DomainLayer.Enum;
+using Org.BouncyCastle.Asn1.Ocsp;
+using static DomainLayer.Enum.GeneralEnum;
+using Microsoft.EntityFrameworkCore;
+
 
 
 namespace ApplicationLayer.Service
@@ -24,15 +31,23 @@ namespace ApplicationLayer.Service
         Task<IActionResult> GetAll();
         Task<IActionResult> Update(Guid id, ChildrenUpdateDto dto);
         Task<IActionResult> GetChildByParent(Guid parentId);
+        Task<IActionResult> Delete(Guid id);
+        Task<IActionResult> HideChildren(Guid childId, bool isHidden);
+        Task<IActionResult> SharingProfile(Guid childId, Guid receiverId);
 
     }
     public class ChildrenService : BaseService, IChildrenService
     {
         private readonly IGenericRepository<Children> _childrenRepo;
+        private readonly IGenericRepository<User> _userRepo;
+        private readonly IGenericRepository<SharingProfile> _sharingRepo;
 
-        public ChildrenService(IGenericRepository<Children> childrenRepo, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
+
+        public ChildrenService(IGenericRepository<Children> childrenRepo, IGenericRepository<User> userRepo, IGenericRepository<SharingProfile> sharingRepo, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
         {
             _childrenRepo = childrenRepo;
+            _userRepo = userRepo;
+            _sharingRepo = sharingRepo;
         }
 
         public async Task<IActionResult> Create(ChildrenCreateDto dto)
@@ -42,9 +57,10 @@ namespace ApplicationLayer.Service
             //    return Unauthorized("User not authenticated");
 
             var childrent = _mapper.Map<Children>(dto);
-            childrent.ParentId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+            //childrent.ParentId = Guid.Parse("11111111-1111-1111-1111-111111111111");
             childrent.CreatedAt = DateTime.Now;
             childrent.UpdatedAt = DateTime.Now;
+            childrent.Status = ChildrentStatusEnum.Active;
 
             await _childrenRepo.CreateAsync(childrent);
             return SuccessResp.Created("Children information added successfully.");
@@ -52,11 +68,6 @@ namespace ApplicationLayer.Service
 
         public async Task<IActionResult> GetAll()
         {
-            //var userIdClaim = _httpCtx.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            //if (string.IsNullOrEmpty(userIdClaim))
-            //    return Unauthorized("User not authenticated");
-
-            //var userId = new Guid(userIdClaim);
             var chidren = await _childrenRepo.ListAsync();
             var result = _mapper.Map<List<ChildrentResponseDto>>(chidren);
 
@@ -85,7 +96,7 @@ namespace ApplicationLayer.Service
             //if (string.IsNullOrEmpty(userIdClaim))
             //    return Unauthorized("User not authenticated");
 
-            var chidren = await _childrenRepo.WhereAsync(c => c.ParentId == parentId);
+            var chidren = await _childrenRepo.WhereAsync(c => c.ParentId == parentId && c.Status == ChildrentStatusEnum.Active);
 
             if (!chidren.Any())
             {
@@ -95,5 +106,80 @@ namespace ApplicationLayer.Service
 
             return SuccessResp.Ok(chidren);
         }
+
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var children = await _childrenRepo.FindByIdAsync(id);
+
+            if (children == null)
+            {
+                return ErrorResp.NotFound("Children Not Found");
+            }
+
+            await _childrenRepo.DeleteAsync(id);
+
+            return SuccessResp.Ok("Children information deleted successfully");
+        }
+
+        public async Task<IActionResult> HideChildren(Guid childId, bool isHidden)
+        {
+            var child = await _childrenRepo.FindByIdAsync(childId);
+            if (child == null)
+            {
+                return ErrorResp.NotFound("Children Not Found");
+            }
+
+            var userId = new Guid("11111111-1111-1111-1111-111111111111");
+            if (child.ParentId != userId)
+            {
+                return ErrorResp.Forbidden("You do not have permission to hide this child's information");
+            }
+
+            child.Status = isHidden ? ChildrentStatusEnum.Disable : ChildrentStatusEnum.Active;
+
+            await _childrenRepo.UpdateAsync(child);
+
+            return SuccessResp.Ok(isHidden ? "Child information is now hidden." : "Child information is now visible.");
+        }
+
+        public async Task<IActionResult> SharingProfile(Guid childId, Guid receiverId)
+        {
+            // Kiểm tra trẻ có tồn tại không
+            var child = await _childrenRepo.FindByIdAsync(childId);
+            if (child == null)
+            {
+                return ErrorResp.NotFound("Child not found.");
+            }
+
+            // Kiểm tra người nhận có tồn tại không
+            var receiver = await _userRepo.FindByIdAsync(receiverId);
+            if (receiver == null)
+            {
+                return ErrorResp.NotFound("Recipient not found.");
+            }
+
+            // Kiểm tra xem đã tồn tại bản ghi chia sẻ chưa
+            var existingShare = await _sharingRepo.WhereAsync(s => s.UserId == receiverId && s.ChildrentId == childId);
+
+            if (existingShare.Any())
+            {
+                return ErrorResp.BadRequest("This child’s information has already been shared with the recipient.");
+            }
+
+            // Tạo bản ghi mới trong bảng SharingProfiles
+            var shareProfile = new SharingProfile
+            {
+                Id = Guid.NewGuid(),
+                UserId = receiverId,
+                ChildrentId = childId,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            await _sharingRepo.CreateAsync(shareProfile);
+
+            return SuccessResp.Ok("Child's development information has been shared successfully.");
+        }
+
     }
 }
