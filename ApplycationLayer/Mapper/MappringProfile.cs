@@ -21,9 +21,11 @@ namespace ApplicationLayer.Mapper
             //BmiCategory
             CreateMap<BmiCategory, BmiCategoryCreateDto>().ReverseMap();
 
+            //Children
             CreateMap<Children, ChildrenCreateDto>().ReverseMap();
             CreateMap<Children, ChildrentResponseDto>();
             CreateMap<Children, ChildrenUpdateDto>().ReverseMap();
+
             //User
             CreateMap<User, UserDto>().ReverseMap();
             CreateMap<User, UserUpdateDto>().ReverseMap();
@@ -31,6 +33,9 @@ namespace ApplicationLayer.Mapper
             CreateMap<RatingFeedback,RatingFeedbackCreateDto>().ReverseMap();
             CreateMap<RatingFeedback, RatingFeedbackUpdateDto>().ReverseMap();
             CreateMap<RatingFeedback, RatingFeedbackDto>().ReverseMap();
+            //Package
+            
+
         }
     }
 }

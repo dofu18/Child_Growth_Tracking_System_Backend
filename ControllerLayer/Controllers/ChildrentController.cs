@@ -24,6 +24,7 @@ namespace ControllerLayer.Controllers
         public async Task<IActionResult> Create([FromBody] ChildrenCreateDto dto)
         {
             _logger.LogInformation("Create Children request received");
+
             return await _childrenService.Create(dto);
         }
 
@@ -39,6 +40,26 @@ namespace ControllerLayer.Controllers
         public async Task<IActionResult> Update(Guid id, [FromBody] ChildrenUpdateDto dto)
         {
             return await _childrenService.Update(id, dto);
+        }
+
+        [HttpDelete("id")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            _logger.LogInformation($"Delete children request received for ID: {id}");
+
+            return await _childrenService.Delete(id);
+        }
+
+        [HttpPost("{childId}")]
+        public async Task<IActionResult> HideChildren(Guid id, [FromBody] bool isHidden)
+        {
+            return await _childrenService.HideChildren(id, isHidden);
+        }
+
+        [HttpPost("{childId}/share/{receiverId}")]
+        public async Task<IActionResult> ShareProfile([FromRoute] Guid childId, [FromRoute] Guid receiverId)
+        {
+            return await _childrenService.SharingProfile(childId, receiverId);
         }
     }
 }
