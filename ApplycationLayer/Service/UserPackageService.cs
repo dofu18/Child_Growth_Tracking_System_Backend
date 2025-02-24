@@ -17,7 +17,7 @@ namespace ApplicationLayer.Service
         Task<IActionResult> RenewPackage(Guid userId, Guid packageId);
         Task<IActionResult> UpdatePackage(Guid packageId, PackageUpdateDto dto);
         Task<IActionResult> DeletePackage(Guid packageId);
-        Task<IActionResult> ProcessPayment(Guid userId, Guid packageId, string paymentMethod);
+        //Task<IActionResult> ProcessPayment(Guid userId, Guid packageId, string paymentMethod);
     }
 
     public class UserPackageService : BaseService, IUserPackageService
