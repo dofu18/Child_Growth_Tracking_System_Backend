@@ -19,6 +19,8 @@ using Microsoft.Extensions.Logging;
 using DomainLayer.Enum;
 using Org.BouncyCastle.Asn1.Ocsp;
 using static DomainLayer.Enum.GeneralEnum;
+using Microsoft.EntityFrameworkCore;
+
 
 
 namespace ApplicationLayer.Service
@@ -31,20 +33,21 @@ namespace ApplicationLayer.Service
         Task<IActionResult> GetChildByParent(Guid parentId);
         Task<IActionResult> Delete(Guid id);
         Task<IActionResult> HideChildren(Guid childId, bool isHidden);
-        Task<IActionResult> ShareProfile(ShareProfileCreateDto dto);
+        Task<IActionResult> SharingProfile(Guid childId, Guid receiverId);
 
     }
     public class ChildrenService : BaseService, IChildrenService
     {
         private readonly IGenericRepository<Children> _childrenRepo;
+        private readonly IGenericRepository<User> _userRepo;
         private readonly IGenericRepository<SharingProfile> _sharingRepo;
-        private readonly ILogger<ChildrenService> _logger; 
 
-        public ChildrenService(IGenericRepository<Children> childrenRepo, IGenericRepository<SharingProfile> sharingRepo, IMapper mapper, IHttpContextAccessor httpCtx, ILogger<ChildrenService> logger) : base(mapper, httpCtx)
+
+        public ChildrenService(IGenericRepository<Children> childrenRepo, IGenericRepository<User> userRepo, IGenericRepository<SharingProfile> sharingRepo, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
         {
             _childrenRepo = childrenRepo;
+            _userRepo = userRepo;
             _sharingRepo = sharingRepo;
-            _logger = logger;
         }
 
         public async Task<IActionResult> Create(ChildrenCreateDto dto)
@@ -139,35 +142,43 @@ namespace ApplicationLayer.Service
             return SuccessResp.Ok(isHidden ? "Child information is now hidden." : "Child information is now visible.");
         }
 
-        public async Task<IActionResult> ShareProfile(ShareProfileCreateDto dto)
+        public async Task<IActionResult> SharingProfile(Guid childId, Guid receiverId)
         {
-            _logger.LogInformation("Processing child profile sharing request...");
-
-            var child = await _childrenRepo.FindByIdAsync(dto.ChildId);
+            // Kiểm tra trẻ có tồn tại không
+            var child = await _childrenRepo.FindByIdAsync(childId);
             if (child == null)
             {
-                _logger.LogWarning("Child profile not found, ID: {ChildId}", dto.ChildId);
-                return ErrorResp.NotFound("Child profile not found");
+                return ErrorResp.NotFound("Child not found.");
             }
 
-            //var user = GetUserByEmail => User(id,....)
-            //var userId = user.Id;  
+            // Kiểm tra người nhận có tồn tại không
+            var receiver = await _userRepo.FindByIdAsync(receiverId);
+            if (receiver == null)
+            {
+                return ErrorResp.NotFound("Recipient not found.");
+            }
 
+            // Kiểm tra xem đã tồn tại bản ghi chia sẻ chưa
+            var existingShare = await _sharingRepo.WhereAsync(s => s.UserId == receiverId && s.ChildrentId == childId);
 
-            var userId = new Guid("11111111-1111-1111-1111-111111111111");  
+            if (existingShare.Any())
+            {
+                return ErrorResp.BadRequest("This child’s information has already been shared with the recipient.");
+            }
 
-            var sharingProfile = new SharingProfile
+            // Tạo bản ghi mới trong bảng SharingProfiles
+            var shareProfile = new SharingProfile
             {
                 Id = Guid.NewGuid(),
-                UserId = userId,
-                ChildrentId = dto.ChildId
+                UserId = receiverId,
+                ChildrentId = childId,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
 
-            await _sharingRepo.CreateAsync(sharingProfile);
+            await _sharingRepo.CreateAsync(shareProfile);
 
-            _logger.LogInformation("Child information shared successfully. ID: {ChildId}, Recipient: {Email}", dto.ChildId, dto.RecipientEmail);
-
-            return SuccessResp.Ok("Child's development information has been shared and stored.");
+            return SuccessResp.Ok("Child's development information has been shared successfully.");
         }
 
     }
