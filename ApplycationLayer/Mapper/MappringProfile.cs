@@ -28,6 +28,10 @@ namespace ApplicationLayer.Mapper
 
             //User
             CreateMap<User, UserDto>().ReverseMap();
+
+            //Package
+            
+
         }
     }
 }

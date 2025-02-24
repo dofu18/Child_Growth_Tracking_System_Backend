@@ -56,10 +56,10 @@ namespace ControllerLayer.Controllers
             return await _childrenService.HideChildren(id, isHidden);
         }
 
-        [HttpPost("share")]
-        public async Task<IActionResult> ShareProfile([FromBody] ShareProfileCreateDto dto)
+        [HttpPost("{childId}/share/{receiverId}")]
+        public async Task<IActionResult> ShareProfile([FromRoute] Guid childId, [FromRoute] Guid receiverId)
         {
-            return await _childrenService.ShareProfile(dto);
+            return await _childrenService.SharingProfile(childId, receiverId);
         }
     }
 }
