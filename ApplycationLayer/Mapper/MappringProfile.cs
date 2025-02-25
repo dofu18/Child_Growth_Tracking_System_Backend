@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ApplicationLayer.DTOs.BmiCategory;
+using ApplicationLayer.DTOs.Children;
+using ApplicationLayer.DTOs.Childrens;
+using ApplicationLayer.DTOs.Doctor;
 using ApplicationLayer.DTOs.User;
 using AutoMapper;
 using DomainLayer.Entities;
@@ -18,8 +21,14 @@ namespace ApplicationLayer.Mapper
             //BmiCategory
             CreateMap<BmiCategory, BmiCategoryCreateDto>().ReverseMap();
 
+            CreateMap<Children, ChildrenCreateDto>().ReverseMap();
+            CreateMap<Children, ChildrentResponseDto>();
+            CreateMap<Children, ChildrenUpdateDto>().ReverseMap();
             //User
             CreateMap<User, UserDto>().ReverseMap();
+
+            //Doctor
+            CreateMap<DoctorLicense, DoctorDto>().ReverseMap();
         }
     }
 }

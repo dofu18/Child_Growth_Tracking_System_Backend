@@ -10,6 +10,7 @@ namespace DomainLayer.Entities
     {
         public string FeatureName { get; set; }
         public string Description { get; set; }
+        public Guid CreatedBy { get; set; }
         
         //Navigation Properties
         public User CreatedUser { get; set; }

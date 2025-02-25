@@ -14,8 +14,6 @@ namespace DomainLayer.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
 
-        public Guid? CreatedBy { get; set; }
-
         public DateTime? CreatedAt { get; set; }
 
         public DateTime? UpdatedAt { get; set; }
