@@ -20,10 +20,10 @@ namespace ApplicationLayer.Service
         Task<IActionResult> CreateDoctorProfile(DoctorDto dto);
         Task<IActionResult> GetAllDoctors();
         Task<IActionResult> UpdateDoctorProfile(Guid id, DoctorDto dto);
-        Task<IActionResult> GetDoctorByLicenseNumber(string licenseNumber);
+       /* Task<IActionResult> GetDoctorByLicenseNumber(string licenseNumber);*/
         Task<IActionResult> DeleteDoctorProfile(Guid id);
-        Task<IActionResult> HideDoctorProfile(Guid doctorId, bool isHidden);
-        Task<IActionResult> ShareDoctorProfile(Guid doctorId, Guid receiverId);
+        /*Task<IActionResult> HideDoctorProfile(Guid doctorId, bool isHidden);*/
+        /*Task<IActionResult> ShareDoctorProfile(Guid doctorId, Guid receiverId);*/
     }
 
     public class DoctorLicenseService : BaseService, IDoctorLicenseService
@@ -84,10 +84,10 @@ namespace ApplicationLayer.Service
         }
 
 
-        public async Task<IActionResult> GetDoctorByLicenseNumber(string licenseNumber)
+        /*public async Task<IActionResult> GetDoctorByLicenseNumber(string licenseNumber)
         {
 
-        }
+        }*/
 
         public async Task<IActionResult> DeleteDoctorProfile(Guid id)
         {
@@ -112,14 +112,14 @@ namespace ApplicationLayer.Service
         }
 
 
-        public async Task<IActionResult> HideDoctorProfile(Guid doctorId, bool isHidden)
+       /* public async Task<IActionResult> HideDoctorProfile(Guid doctorId, bool isHidden)
         {
             
-        }
+        }*/
 
-        public async Task<IActionResult> ShareDoctorProfile(Guid doctorId, Guid receiverId)
+       /* public async Task<IActionResult> ShareDoctorProfile(Guid doctorId, Guid receiverId)
         {
             
-        }
+        }*/
     }
 }
