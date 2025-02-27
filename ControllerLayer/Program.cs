@@ -12,7 +12,7 @@ using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
-var CORS = "AllowAllOrigins";
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -52,15 +52,15 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Configure CORS
+// Add CORS Policy
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(CORS,
-        builder =>
+    options.AddPolicy(MyAllowSpecificOrigins,
+        policy =>
         {
-            builder.SetIsOriginAllowedToAllowWildcardSubdomains()
-                  .AllowAnyOrigin()
-                  .AllowAnyMethod()
-                  .AllowAnyHeader();
+            policy.WithOrigins("http://localhost:5173") // Allow frontend domain
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
         });
 });
 //Google OAuth
@@ -116,11 +116,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseRouting();
+app.UseCors(MyAllowSpecificOrigins);
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
+
 
 app.Run();
