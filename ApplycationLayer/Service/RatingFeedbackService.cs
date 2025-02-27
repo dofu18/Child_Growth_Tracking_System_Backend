@@ -88,11 +88,11 @@ namespace ApplicationLayer.Service
               .Take(pageSize)
               .ToList();
 
-            var houses = _mapper.Map<IEnumerable<RatingFeedbackDto>>(ratingFeedback);
+            var feedback = _mapper.Map<IEnumerable<RatingFeedbackDto>>(ratingFeedback);
 
             var result = new
             {
-                Data = houses,
+                Data = feedback,
                 Total = resp.Count,
                 Page = query.Page,
                 PageSize = query.PageSize
@@ -121,11 +121,11 @@ namespace ApplicationLayer.Service
               .Take(pageSize)
               .ToList();
 
-            var houses = _mapper.Map<IEnumerable<RatingFeedbackDto>>(ratingFeedback);
+            var feedback = _mapper.Map<IEnumerable<RatingFeedbackDto>>(ratingFeedback);
 
             var result = new
             {
-                Data = houses,
+                Data = feedback,
                 Total = resp.Count,
                 Page = query.Page,
                 PageSize = query.PageSize
@@ -146,7 +146,7 @@ namespace ApplicationLayer.Service
 
             if (!payload.UserId.Equals(ratingFeedback.UserId))
             {
-                return ErrorResp.BadRequest("Just the owner can update this house");
+                return ErrorResp.BadRequest("Just the owner can update this feedback");
             }
 
             if (ratingFeedback == null)
