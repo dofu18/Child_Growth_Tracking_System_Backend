@@ -32,5 +32,6 @@ namespace ApplicationLayer.Mapper
             //Doctor
             CreateMap<DoctorLicense, DoctorDto>().ReverseMap();
         }
+        //
     }
 }
