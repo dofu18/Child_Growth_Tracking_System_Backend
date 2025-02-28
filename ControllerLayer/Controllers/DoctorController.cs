@@ -1,4 +1,5 @@
 ﻿using ApplicationLayer.DTOs.Doctor;
+using ApplicationLayer.Middlewares;
 using ApplicationLayer.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +19,7 @@ namespace ControllerLayer.Controllers
             _doctorService = doctorService;
         }
 
+        [Protected]
         [HttpPost("create")]
         public async Task<IActionResult> CreateDoctorProfile([FromBody] DoctorDto dto)
         {
@@ -33,15 +35,36 @@ namespace ControllerLayer.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateDoctorProfile(Guid id, [FromBody] DoctorDto dto)
+        public async Task<IActionResult> UpdateDoctorProfile(Guid id, [FromBody] DoctorUpdateDto dto)
         {
-            return await _doctorService.UpdateDoctorProfile(id, dto);
+            if (dto == null)
+            {
+                return BadRequest("Request body cannot be null");
+            }
+
+            // Gọi tới service để xử lý logic
+            var result = await _doctorService.UpdateDoctorProfile(id, dto);
+
+            // Trả về kết quả từ service (thành công hoặc lỗi)
+            return result;
+        }
+
+        [HttpGet("biography/{biography}")]
+        public async Task<IActionResult> GetDoctorByBiography([FromRoute] string biography)
+        {
+            return await _doctorService.GetDoctorByBiography(biography);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteDoctorProfile([FromRoute] Guid id)
         {
             return await _doctorService.DeleteDoctorProfile(id);
+        }
+
+        [HttpPost("{doctorId}/share/{receiverId}")]
+        public async Task<IActionResult> ShareDoctorProfile(Guid doctorId, Guid receiverId)
+        {
+            return await _doctorService.ShareDoctorProfile(doctorId, receiverId);
         }
     }
 }
