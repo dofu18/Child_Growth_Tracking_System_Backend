@@ -51,7 +51,7 @@ namespace ControllerLayer.Controllers
         [HttpPatch("{id}")]
         public async Task<IActionResult> UpdateStatus(Guid id, [FromQuery] RatingFeedbackStatusEnum status)
         {
-            _logger.LogInformation("Modify Feedvacj status request received");
+            _logger.LogInformation("Modify Feedback status request received");
 
             return await _ratingFeedbackService.HandleStatusAsync(id, status);
         }

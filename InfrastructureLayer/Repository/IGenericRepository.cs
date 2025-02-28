@@ -25,5 +25,11 @@ namespace InfrastructureLayer.Repository
         Task UpdateRangeAsync(IEnumerable<T> entities);
         Task<long> SumAsync(Expression<Func<T, bool>> predicate, Expression<Func<T, long>> sumExpression);
         Task<int> CountAsync();
+        //add
+        Task<List<T>> WhereAsync(Expression<Func<T, bool>>? filter = null, Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
+        int? page = null,
+        int? pageSize = null,
+        params string[] navigationProperties);
+        Task<int> CountAsync(Expression<Func<T, bool>>? filter = null);
     }
 }
