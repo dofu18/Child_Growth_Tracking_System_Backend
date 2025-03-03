@@ -1,4 +1,4 @@
-using ApplicationLayer.Service;
+﻿using ApplicationLayer.Service;
 using InfrastructureLayer.Core.Cache;
 using InfrastructureLayer.Core.Crypto;
 using InfrastructureLayer.Core.JWT;
@@ -57,12 +57,20 @@ builder.Services.AddCors(options =>
     options.AddPolicy(CORS,
         builder =>
         {
+<<<<<<< Updated upstream
             builder.SetIsOriginAllowedToAllowWildcardSubdomains()
                   .AllowAnyOrigin()
                   .AllowAnyMethod()
                   .AllowAnyHeader();
+=======
+            policy.WithOrigins("http://localhost:5173") 
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+>>>>>>> Stashed changes
         });
 });
+
 //Google OAuth
 builder.Services.AddAuthentication(options =>
 {
