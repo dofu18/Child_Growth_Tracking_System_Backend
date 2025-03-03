@@ -39,31 +39,49 @@ namespace ApplicationLayer.Service
     public class ChildrenService : BaseService, IChildrenService
     {
         private readonly IGenericRepository<Children> _childrenRepo;
+        private readonly IGenericRepository<BmiCategory> _bmiCategoryRepo;
         private readonly IGenericRepository<User> _userRepo;
         private readonly IGenericRepository<SharingProfile> _sharingRepo;
 
 
-        public ChildrenService(IGenericRepository<Children> childrenRepo, IGenericRepository<User> userRepo, IGenericRepository<SharingProfile> sharingRepo, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
+
+        public ChildrenService(IGenericRepository<Children> childrenRepo, IGenericRepository<User> userRepo, IGenericRepository<SharingProfile> sharingRepo, IGenericRepository<BmiCategory> bmiCategoryRepo, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
         {
             _childrenRepo = childrenRepo;
             _userRepo = userRepo;
             _sharingRepo = sharingRepo;
+            _bmiCategoryRepo = bmiCategoryRepo;
         }
 
         public async Task<IActionResult> Create(ChildrenCreateDto dto)
         {
-            //var userIdClaim = _httpCtx.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            //if (string.IsNullOrEmpty(userIdClaim))
-            //    return Unauthorized("User not authenticated");
+            if (dto == null)
+            {
+                return ErrorResp.BadRequest("Dữ liệu không hợp lệ.");
+            }
 
-            var childrent = _mapper.Map<Children>(dto);
-            //childrent.ParentId = Guid.Parse("11111111-1111-1111-1111-111111111111");
-            childrent.CreatedAt = DateTime.Now;
-            childrent.UpdatedAt = DateTime.Now;
-            childrent.Status = ChildrentStatusEnum.Active;
+            if (dto.Height <= 0 || dto.Weight <= 0)
+            {
+                return ErrorResp.BadRequest("Chiều cao và cân nặng phải lớn hơn 0.");
+            }
 
-            await _childrenRepo.CreateAsync(childrent);
-            return SuccessResp.Created("Children information added successfully.");
+            var child = _mapper.Map<Children>(dto);
+            child.Bmi = dto.Weight / ((dto.Height / 100) * (dto.Height / 100));
+
+            // Tìm danh mục BMI
+            var bmiCategory = await _bmiCategoryRepo.FirstOrDefaultAsync(c => child.Bmi >= c.BmiBottom && child.Bmi <= c.BmiTop);
+            if (bmiCategory == null)
+            {
+                throw new Exception("Không tìm thấy danh mục BMI phù hợp.");
+            }
+
+            child.BmiCategoryId = bmiCategory.Id;
+            child.ParentId = dto.ParentId;
+            child.Status = ChildrentStatusEnum.Active;
+            child.CreatedAt = DateTime.UtcNow;
+
+            await _childrenRepo.CreateAsync(child);
+            return SuccessResp.Created("Children information added successfully");
         }
 
         public async Task<IActionResult> GetAll()

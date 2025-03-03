@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using ApplicationLayer.DTOs.BmiCategory;
 using ApplicationLayer.DTOs.Children;
 using ApplicationLayer.DTOs.Childrens;
-using ApplicationLayer.DTOs.User;
+using ApplicationLayer.DTOs.Package;
 using ApplicationLayer.DTOs.User;
 using AutoMapper;
 using DomainLayer.Entities;
@@ -30,7 +30,10 @@ namespace ApplicationLayer.Mapper
             CreateMap<User, UserDto>().ReverseMap();
 
             //Package
-            
+            CreateMap<Package, PackageCreateDto>().ReverseMap();
+            CreateMap<Package, RenewPackageDto>().ReverseMap();
+            CreateMap<Package, CancelPackageDto>().ReverseMap();
+            CreateMap<Package, PackageUpdateDto>().ReverseMap();
 
         }
     }

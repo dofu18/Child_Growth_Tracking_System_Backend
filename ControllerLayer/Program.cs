@@ -104,6 +104,8 @@ builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositor
 builder.Services.AddScoped<IBmiCategoryService, BmiCategoryService>();
 builder.Services.AddScoped<IChildrenService, ChildrenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserPackageService, UserPackageService>();
+builder.Services.AddScoped<IVNPAYService, VNPayService>();
 
 var app = builder.Build();
 
