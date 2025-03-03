@@ -23,6 +23,7 @@ namespace ApplicationLayer.Service
         Task<IActionResult> DeletePackage(Guid packageId);
         Task<IActionResult> ProcessPayment(Guid userId, Guid packageId, string paymentMethod, decimal money);
         Task<IActionResult> VnPayReturn(string vnp_ResponseCode, Guid transactionId);
+        //Task<IActionResult> ProcessPayment(Guid userId, Guid packageId, string paymentMethod);
     }
 
     public class UserPackageService : BaseService, IUserPackageService
