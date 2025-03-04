@@ -256,6 +256,11 @@ namespace ApplicationLayer.Service
 
         public async Task<IActionResult> HandleOTPForgotPassword(RequestOTP req)
         {
+            var user = await _userRepo.WhereAsync(u => u.Email == req.Email);
+            if (user == null || !user.Any()) // Ensure user exists before proceeding
+            {
+                return ErrorResp.NotFound("User not found in system");
+            }
             var otp = StrHelper.GenerateRandomOTP();
 
             var redisKey = $"local:otp:{req.Email}:forgot_password";

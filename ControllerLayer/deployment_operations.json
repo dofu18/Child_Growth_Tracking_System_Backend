@@ -1,0 +1,70 @@
+[
+  {
+    "id": "/subscriptions/5c7f4e63-3f46-4877-828d-650ecf8212bb/resourceGroups/ChildGrowth/providers/Microsoft.Resources/deployments/Microsoft.Web-WebAppDatabase-Portal-975ba7e0-86c2/operations/17EAE5B20A50E5F4",
+    "operationId": "17EAE5B20A50E5F4",
+    "properties": {
+      "provisioningOperation": "Create",
+      "provisioningState": "Running",
+      "timestamp": "2025-02-27T17:59:44.0892157Z",
+      "duration": "PT4M49.1643364S",
+      "trackingId": "ec4648a7-b535-4fe6-9c15-8b5fc4b2d0ea",
+      "statusCode": "Created",
+      "targetResource": {
+        "id": "/subscriptions/5c7f4e63-3f46-4877-828d-650ecf8212bb/resourceGroups/ChildGrowth/providers/Microsoft.Resources/deployments/cacheResourcesDeployment",
+        "resourceType": "Microsoft.Resources/deployments",
+        "resourceName": "cacheResourcesDeployment"
+      }
+    }
+  },
+  {
+    "id": "/subscriptions/5c7f4e63-3f46-4877-828d-650ecf8212bb/resourceGroups/ChildGrowth/providers/Microsoft.Resources/deployments/Microsoft.Web-WebAppDatabase-Portal-975ba7e0-86c2/operations/152AB9FE4FAA9545",
+    "operationId": "152AB9FE4FAA9545",
+    "properties": {
+      "provisioningOperation": "Create",
+      "provisioningState": "Succeeded",
+      "timestamp": "2025-02-27T17:56:02.5058828Z",
+      "duration": "PT3M3.9713389S",
+      "trackingId": "818b432b-763e-4520-a24d-cc0854ada2d1",
+      "statusCode": "OK",
+      "targetResource": {
+        "id": "/subscriptions/5c7f4e63-3f46-4877-828d-650ecf8212bb/resourceGroups/ChildGrowth/providers/Microsoft.Resources/deployments/appServiceResourcesDeployment",
+        "resourceType": "Microsoft.Resources/deployments",
+        "resourceName": "appServiceResourcesDeployment"
+      }
+    }
+  },
+  {
+    "id": "/subscriptions/5c7f4e63-3f46-4877-828d-650ecf8212bb/resourceGroups/ChildGrowth/providers/Microsoft.Resources/deployments/Microsoft.Web-WebAppDatabase-Portal-975ba7e0-86c2/operations/D503AF2C2E7ED837",
+    "operationId": "D503AF2C2E7ED837",
+    "properties": {
+      "provisioningOperation": "Create",
+      "provisioningState": "Running",
+      "timestamp": "2025-02-27T17:59:47.5672878Z",
+      "duration": "PT4M52.6424085S",
+      "trackingId": "40105760-f5bf-4431-850e-47f8247488de",
+      "statusCode": "Created",
+      "targetResource": {
+        "id": "/subscriptions/5c7f4e63-3f46-4877-828d-650ecf8212bb/resourceGroups/ChildGrowth/providers/Microsoft.Resources/deployments/databaseResourcesDeployment",
+        "resourceType": "Microsoft.Resources/deployments",
+        "resourceName": "databaseResourcesDeployment"
+      }
+    }
+  },
+  {
+    "id": "/subscriptions/5c7f4e63-3f46-4877-828d-650ecf8212bb/resourceGroups/ChildGrowth/providers/Microsoft.Resources/deployments/Microsoft.Web-WebAppDatabase-Portal-975ba7e0-86c2/operations/B5ADDB38834F6AAD",
+    "operationId": "B5ADDB38834F6AAD",
+    "properties": {
+      "provisioningOperation": "Create",
+      "provisioningState": "Succeeded",
+      "timestamp": "2025-02-27T17:54:54.7965729Z",
+      "duration": "PT1M56.262029S",
+      "trackingId": "3c7bfa0f-a9f0-4994-a939-69546049d338",
+      "statusCode": "OK",
+      "targetResource": {
+        "id": "/subscriptions/5c7f4e63-3f46-4877-828d-650ecf8212bb/resourceGroups/ChildGrowth/providers/Microsoft.Resources/deployments/vnetResourcesDeployment",
+        "resourceType": "Microsoft.Resources/deployments",
+        "resourceName": "vnetResourcesDeployment"
+      }
+    }
+  }
+]

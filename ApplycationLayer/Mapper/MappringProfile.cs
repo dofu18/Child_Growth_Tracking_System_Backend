@@ -8,6 +8,7 @@ using ApplicationLayer.DTOs.Children;
 using ApplicationLayer.DTOs.Childrens;
 using ApplicationLayer.DTOs.Package;
 using ApplicationLayer.DTOs.Payment;
+using ApplicationLayer.DTOs.RatingFeedback;
 using ApplicationLayer.DTOs.User;
 using AutoMapper;
 using DomainLayer.Entities;
@@ -29,7 +30,11 @@ namespace ApplicationLayer.Mapper
 
             //User
             CreateMap<User, UserDto>().ReverseMap();
-
+            CreateMap<User, UserUpdateDto>().ReverseMap();
+            //RatingFeedback
+            CreateMap<RatingFeedback,RatingFeedbackCreateDto>().ReverseMap();
+            CreateMap<RatingFeedback, RatingFeedbackUpdateDto>().ReverseMap();
+            CreateMap<RatingFeedback, RatingFeedbackDto>().ReverseMap();
             //Package
             CreateMap<Package, PackageCreateDto>().ReverseMap();
             CreateMap<Package, RenewPackageDto>().ReverseMap();
