@@ -107,6 +107,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRatingFeedbackService, RatingFeedbackService>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserPackageService, UserPackageService>();
+builder.Services.AddScoped<IVNPAYService, VNPayService>();
 
 var app = builder.Build();
 
