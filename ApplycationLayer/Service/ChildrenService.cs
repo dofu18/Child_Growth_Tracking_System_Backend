@@ -55,6 +55,13 @@ namespace ApplicationLayer.Service
 
         public async Task<IActionResult> Create(ChildrenCreateDto dto)
         {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+            var userId = payload.UserId;
+
             if (dto == null)
             {
                 return ErrorResp.BadRequest("Dữ liệu không hợp lệ.");
@@ -76,7 +83,7 @@ namespace ApplicationLayer.Service
             }
 
             child.BmiCategoryId = bmiCategory.Id;
-            child.ParentId = dto.ParentId;
+            child.ParentId = userId;
             child.Status = ChildrentStatusEnum.Active;
             child.CreatedAt = DateTime.UtcNow;
 

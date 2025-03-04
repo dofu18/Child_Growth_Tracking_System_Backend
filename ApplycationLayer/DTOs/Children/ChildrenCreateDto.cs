@@ -18,6 +18,5 @@ namespace ApplicationLayer.DTOs.Childrens
         public decimal Weight { get; set; }
         public decimal Height { get; set; }
         public string Notes { get; set; }
-        public Guid ParentId { get; set; }
     }
 }
