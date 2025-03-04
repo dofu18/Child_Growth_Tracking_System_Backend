@@ -12,7 +12,8 @@ namespace ApplicationLayer.DTOs.Children
         public string Name { get; set; }
         public DateOnly DoB { get; set; }
         public GenderEnum Gender { get; set; }
-        public float Weight { get; set; }
-        public float Height { get; set; }
+        public decimal Weight { get; set; }
+        public decimal Height { get; set; }
+        public string Notes { get; set; }
     }
 }

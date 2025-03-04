@@ -1,5 +1,6 @@
 ﻿using ApplicationLayer.DTOs.Children;
 using ApplicationLayer.DTOs.Childrens;
+using ApplicationLayer.Middlewares;
 using ApplicationLayer.Service;
 using InfrastructureLayer.Database;
 using Microsoft.AspNetCore.Authorization;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ControllerLayer.Controllers
 {
+    [ApiController]
     [Route("api/v1/children")]
     public class ChildrenController : ControllerBase
     {
@@ -19,6 +21,7 @@ namespace ControllerLayer.Controllers
             _childrenService = childrenService;
         }
 
+        [Protected]
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] ChildrenCreateDto dto)
         {
