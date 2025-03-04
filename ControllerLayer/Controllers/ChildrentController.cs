@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace ControllerLayer.Controllers
 {
     [Route("api/v1/children")]
-    //[Authorize]
     public class ChildrenController : ControllerBase
     {
         private readonly IChildrenService _childrenService;
