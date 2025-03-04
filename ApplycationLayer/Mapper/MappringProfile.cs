@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using ApplicationLayer.DTOs.BmiCategory;
 using ApplicationLayer.DTOs.Children;
 using ApplicationLayer.DTOs.Childrens;
-using ApplicationLayer.DTOs.Doctor;
+using ApplicationLayer.DTOs.RatingFeedback;
 using ApplicationLayer.DTOs.User;
 using AutoMapper;
 using DomainLayer.Entities;
@@ -28,10 +28,14 @@ namespace ApplicationLayer.Mapper
 
             //User
             CreateMap<User, UserDto>().ReverseMap();
+            CreateMap<User, UserUpdateDto>().ReverseMap();
+            //RatingFeedback
+            CreateMap<RatingFeedback,RatingFeedbackCreateDto>().ReverseMap();
+            CreateMap<RatingFeedback, RatingFeedbackUpdateDto>().ReverseMap();
+            CreateMap<RatingFeedback, RatingFeedbackDto>().ReverseMap();
+            //Package
+            
 
-            //Doctor
-            CreateMap<DoctorLicense, DoctorDto>().ReverseMap();
         }
-        //
     }
 }
