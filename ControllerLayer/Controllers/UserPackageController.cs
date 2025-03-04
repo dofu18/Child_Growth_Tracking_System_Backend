@@ -20,11 +20,11 @@ namespace ControllerLayer.Controllers
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] PackageCreateDto dto)
         {
-            var adminId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var adminId = Guid.Parse("11111111-1111-1111-1111-111111111111");
             return await _userPackageService.CreatePackage(dto, adminId);
         }
 
-        [HttpPost("/renew/{userId}")]
+        [HttpPost("renew/{userId}")]
         public async Task<IActionResult> RenewMembership([FromRoute] Guid userId, [FromBody] RenewPackageDto dto)
         {
             _logger.LogInformation($"Renew Membership request received for User: {userId}, Package: {dto.PackageId}");
@@ -32,7 +32,7 @@ namespace ControllerLayer.Controllers
             return await _userPackageService.RenewPackage(userId, dto.PackageId);
         }
 
-        [HttpPut("/edit/{packageId}")]
+        [HttpPut("edit/{packageId}")]
         public async Task<IActionResult> UpdatePackage(Guid packageId, [FromBody] PackageUpdateDto dto)
         {
             _logger.LogInformation($"Admin updating package {packageId}");
@@ -40,7 +40,7 @@ namespace ControllerLayer.Controllers
             return await _userPackageService.UpdatePackage(packageId, dto);
         }
 
-        [HttpDelete("/delete/{packageId}")]
+        [HttpDelete("delete/{packageId}")]
         public async Task<IActionResult> DeletePackage(Guid packageId)
         {
             _logger.LogInformation($"Admin deleting package {packageId}");

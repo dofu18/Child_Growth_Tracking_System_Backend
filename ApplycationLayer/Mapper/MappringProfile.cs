@@ -7,6 +7,7 @@ using ApplicationLayer.DTOs.BmiCategory;
 using ApplicationLayer.DTOs.Children;
 using ApplicationLayer.DTOs.Childrens;
 using ApplicationLayer.DTOs.Package;
+using ApplicationLayer.DTOs.Payment;
 using ApplicationLayer.DTOs.User;
 using AutoMapper;
 using DomainLayer.Entities;
@@ -35,6 +36,8 @@ namespace ApplicationLayer.Mapper
             CreateMap<Package, CancelPackageDto>().ReverseMap();
             CreateMap<Package, PackageUpdateDto>().ReverseMap();
 
+            //Transaction
+            CreateMap<Transaction, PaymentResponseDto>();
         }
     }
 }

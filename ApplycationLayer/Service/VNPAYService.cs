@@ -29,6 +29,8 @@ namespace ApplicationLayer.Service
             // Lấy URL cổng thanh toán của VNPAY từ appsettings.json
             var vnp_Url = _configuration["VNPAY:BaseUrl"];
 
+            var vnp_HashSecret = _configuration["VNPAY:HashSecret"];
+
             var time = DateTime.Now.ToString("yyyyMMddHHmmss");
 
             // Tạo URL thanh toán VNPAY
@@ -40,7 +42,21 @@ namespace ApplicationLayer.Service
                       $"&vnp_CreateDate={time}" +       // Thời gian tạo giao dịch
                       $"&vnp_ReturnUrl={returnUrl}";    // URL callback sau khi thanh toán
 
+            var signature = GenerateSignature(url, vnp_HashSecret);
+            url += $"&vnp_Signature={signature}";
+
             return url;
+        }
+
+        // Helper function to generate the VNPAY signature
+        private string GenerateSignature(string url, string secretKey)
+        {
+            var data = Encoding.ASCII.GetBytes(url + secretKey);
+            using (var hash = System.Security.Cryptography.MD5.Create())
+            {
+                var result = hash.ComputeHash(data);
+                return BitConverter.ToString(result).Replace("-", "").ToUpper();
+            }
         }
     }
 }

@@ -17,7 +17,7 @@ namespace ApplicationLayer.Service
 {
     public interface IUserPackageService
     {
-        Task<IActionResult> CreatePackage(PackageCreateDto dto, Guid adminId);
+        Task<IActionResult> CreatePackage(PackageCreateDto dto, Guid userId);
         Task<IActionResult> RenewPackage(Guid userId, Guid packageId);
         Task<IActionResult> UpdatePackage(Guid packageId, PackageUpdateDto dto);
         Task<IActionResult> DeletePackage(Guid packageId);
@@ -42,25 +42,39 @@ namespace ApplicationLayer.Service
             _configuration = configuration;
         }
 
-        public async Task<IActionResult> CreatePackage(PackageCreateDto dto, Guid adminId)
+        public async Task<IActionResult> CreatePackage(PackageCreateDto dto, Guid userId)
         {
             try
             {
-                var package = _mapper.Map<Package>(dto);
-                package.Id = Guid.NewGuid();
-                package.CreatedBy = adminId;
-                package.Status = PackageStatusEnum.Published;
-                package.CreatedAt = DateTime.UtcNow;
+                var package = new Package
+                {
+                    Id = Guid.NewGuid(),
+                    PackageName = dto.PackageName,
+                    Description = dto.Description,
+                    Price = dto.Price,
+                    DurationMonths = dto.DurationMonths,
+                    TrialPeriodDays = dto.TrialPeriodDays,
+                    MaxChildrentAllowed = dto.MaxChildrentAllowed,
+                    CreatedBy = userId,
+                    Status = PackageStatusEnum.Published,
+                    CreatedAt = DateTime.UtcNow
+                };
 
                 await _packageRepo.CreateAsync(package);
 
-                return SuccessResp.Ok("Package created successfully");
-
-            } catch (Exception ex)
+                return SuccessResp.Created("Package created successfully");
+            }
+            catch (DbUpdateException ex)
             {
-                return ErrorResp.InternalServerError(ex.Message);
+                return ErrorResp.InternalServerError($"DbUpdateException: {ex.InnerException?.Message ?? ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                return ErrorResp.InternalServerError($"Exception: {ex.Message}");
             }
         }
+
+
 
         public async Task<IActionResult> RenewPackage(Guid userId, Guid packageId)
         {
@@ -183,6 +197,8 @@ namespace ApplicationLayer.Service
                     return ErrorResp.NotFound("Package not found");
                 }
 
+                var merchantTransactionId = Guid.NewGuid().ToString();
+
                 var transaction = new Transaction
                 {
                     Id = Guid.NewGuid(),
@@ -192,15 +208,18 @@ namespace ApplicationLayer.Service
                     Currency = "USD",
                     TransactionType = "Membership",
                     PaymentMethod = paymentMethod,
-                    TransactionDate = DateTime.Now,
-                    PaymentStatus = PaymentStatusEnum.Pending
+                    TransactionDate = DateTime.UtcNow,
+                    PaymentStatus = PaymentStatusEnum.Pending,
+                    MerchantTransactionId = merchantTransactionId,
+                    Description = $"Payment for package {packageId} by user {userId}"
+
                 };
 
                 await _transactionRepo.CreateAsync(transaction);
 
                 // Tạo URL thanh toán VNPAY
                 var returnUrl = _configuration["Vnpay:ReturnUrl"] + "?transactionId=" + transaction.Id; // URL callback
-                var paymentUrl = _vnPayService.CreatePaymentUrl(userId, packageId, package.Price, returnUrl);
+                var paymentUrl = _vnPayService.CreatePaymentUrl(userId, packageId, money, returnUrl);
 
                 var response = new PaymentResponseDto
                 {
@@ -212,7 +231,7 @@ namespace ApplicationLayer.Service
             }
             catch (Exception ex)
             {
-                return ErrorResp.InternalServerError(ex.Message);
+                return ErrorResp.InternalServerError($"Exception: {ex.InnerException?.Message ?? ex.Message}");
             }
         }
 
@@ -246,6 +265,7 @@ namespace ApplicationLayer.Service
                 }
                 else
                 {
+                    // If payment failed
                     transaction.PaymentStatus = PaymentStatusEnum.Failed;
                 }
 
@@ -255,7 +275,7 @@ namespace ApplicationLayer.Service
             }
             catch (Exception ex)
             {
-                return ErrorResp.InternalServerError(ex.Message);
+                return ErrorResp.InternalServerError($"Exception: {ex.Message}");
             }
         }
     }

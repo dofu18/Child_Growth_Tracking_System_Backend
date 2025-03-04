@@ -13,10 +13,11 @@ namespace ApplicationLayer.DTOs.Childrens
     public class ChildrenCreateDto
     {
         public string Name { get; set; }
-        public DateTime DateOfBirth { get; set; }
-        public int Gender { get; set; } // 1: Male, 2: Female
-        public decimal Height { get; set; }
+        public DateOnly DoB { get; set; }
+        public GenderEnum Gender { get; set; }
         public decimal Weight { get; set; }
+        public decimal Height { get; set; }
+        public string Notes { get; set; }
         public Guid ParentId { get; set; }
     }
 }
