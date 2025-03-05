@@ -30,15 +30,20 @@ namespace ApplicationLayer.Mapper
             //User
             CreateMap<User, UserDto>().ReverseMap();
             CreateMap<User, UserUpdateDto>().ReverseMap();
+
+            //Doctor
+            CreateMap<DoctorLicense, DoctorDto>().ReverseMap();
+            CreateMap<DoctorLicense, DoctorUpdateDto>().ReverseMap();
+
             //RatingFeedback
             CreateMap<RatingFeedback,RatingFeedbackCreateDto>().ReverseMap();
             CreateMap<RatingFeedback, RatingFeedbackUpdateDto>().ReverseMap();
             CreateMap<RatingFeedback, RatingFeedbackDto>().ReverseMap();
             //Package
-
-            //Doctor
-            CreateMap<DoctorLicense, DoctorDto>().ReverseMap();
-
+            
+            
+            //Transaction
+            CreateMap<Transaction, PaymentResponseDto>();
         }
     }
 }

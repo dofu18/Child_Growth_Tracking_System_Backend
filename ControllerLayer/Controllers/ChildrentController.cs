@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace ControllerLayer.Controllers
 {
     [Route("api/v1/children")]
-    //[Authorize]
     public class ChildrenController : ControllerBase
     {
         private readonly IChildrenService _childrenService;
@@ -28,7 +27,7 @@ namespace ControllerLayer.Controllers
             return await _childrenService.Create(dto);
         }
 
-        [HttpGet("{parentId}")]
+        [HttpGet("getChildByParent/{parentId}")]
         public async Task<IActionResult> GetChildByParent([FromRoute] Guid parentId)
         {
             _logger.LogInformation("Get all children by parent request received");
@@ -36,13 +35,13 @@ namespace ControllerLayer.Controllers
             return await _childrenService.GetChildByParent(parentId);
         }
 
-        [HttpPut("id")]
+        [HttpPut("/update/{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] ChildrenUpdateDto dto)
         {
             return await _childrenService.Update(id, dto);
         }
 
-        [HttpDelete("id")]
+        [HttpDelete("/delete/{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             _logger.LogInformation($"Delete children request received for ID: {id}");
@@ -50,7 +49,7 @@ namespace ControllerLayer.Controllers
             return await _childrenService.Delete(id);
         }
 
-        [HttpPost("{childId}")]
+        [HttpPost("/hideChildren/{id}")]
         public async Task<IActionResult> HideChildren(Guid id, [FromBody] bool isHidden)
         {
             return await _childrenService.HideChildren(id, isHidden);
