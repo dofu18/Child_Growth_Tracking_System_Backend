@@ -1,5 +1,6 @@
 ﻿using ApplicationLayer.DTOs.Children;
 using ApplicationLayer.DTOs.Childrens;
+using ApplicationLayer.Middlewares;
 using ApplicationLayer.Service;
 using InfrastructureLayer.Database;
 using Microsoft.AspNetCore.Authorization;
@@ -19,6 +20,7 @@ namespace ControllerLayer.Controllers
             _childrenService = childrenService;
         }
 
+        [Protected]
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] ChildrenCreateDto dto)
         {

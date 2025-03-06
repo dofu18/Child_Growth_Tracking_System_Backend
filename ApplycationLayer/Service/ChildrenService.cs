@@ -73,7 +73,7 @@ namespace ApplicationLayer.Service
             }
 
             var child = _mapper.Map<Children>(dto);
-            child.Bmi = dto.Weight / ((dto.Height / 100) * (dto.Height / 100));
+            child.Bmi = dto.Weight / ((dto.Height) * (dto.Height));
 
             // Tìm danh mục BMI
             var bmiCategory = await _bmiCategoryRepo.FirstOrDefaultAsync(c => child.Bmi >= c.BmiBottom && child.Bmi <= c.BmiTop);
