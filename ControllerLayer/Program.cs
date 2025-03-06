@@ -104,6 +104,7 @@ builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositor
 builder.Services.AddScoped<IBmiCategoryService, BmiCategoryService>();
 builder.Services.AddScoped<IChildrenService, ChildrenService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IDoctorLicenseService, DoctorLicenseService>();
 builder.Services.AddScoped<IRatingFeedbackService, RatingFeedbackService>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();

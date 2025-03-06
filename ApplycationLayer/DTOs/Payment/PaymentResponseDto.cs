@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ApplicationLayer.DTOs.Payment
+namespace ApplicationLayer.DTOs.Payments
 {
     public class PaymentResponseDto
     {

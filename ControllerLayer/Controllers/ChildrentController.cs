@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ControllerLayer.Controllers
 {
+    [ApiController]
     [Route("api/v1/children")]
     public class ChildrenController : ControllerBase
     {
@@ -29,6 +30,7 @@ namespace ControllerLayer.Controllers
             return await _childrenService.Create(dto);
         }
 
+        [Protected]
         [HttpGet("getChildByParent/{parentId}")]
         public async Task<IActionResult> GetChildByParent([FromRoute] Guid parentId)
         {
@@ -37,12 +39,14 @@ namespace ControllerLayer.Controllers
             return await _childrenService.GetChildByParent(parentId);
         }
 
+        [Protected]
         [HttpPut("/update/{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] ChildrenUpdateDto dto)
         {
             return await _childrenService.Update(id, dto);
         }
 
+        [Protected]
         [HttpDelete("/delete/{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
@@ -51,12 +55,14 @@ namespace ControllerLayer.Controllers
             return await _childrenService.Delete(id);
         }
 
+        [Protected]
         [HttpPost("/hideChildren/{id}")]
         public async Task<IActionResult> HideChildren(Guid id, [FromBody] bool isHidden)
         {
             return await _childrenService.HideChildren(id, isHidden);
         }
 
+        [Protected]
         [HttpPost("{childId}/share/{receiverId}")]
         public async Task<IActionResult> ShareProfile([FromRoute] Guid childId, [FromRoute] Guid receiverId)
         {
