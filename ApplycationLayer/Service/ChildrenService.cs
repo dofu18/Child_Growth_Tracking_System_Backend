@@ -73,6 +73,7 @@ namespace ApplicationLayer.Service
             }
 
             var child = _mapper.Map<Children>(dto);
+
             child.Bmi = dto.Weight / ((dto.Height/100) * (dto.Height/100));
 
             // Tìm danh mục BMI

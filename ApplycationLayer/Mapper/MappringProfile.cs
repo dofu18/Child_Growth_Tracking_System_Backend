@@ -7,6 +7,7 @@ using ApplicationLayer.DTOs.BmiCategory;
 using ApplicationLayer.DTOs.Children;
 using ApplicationLayer.DTOs.Childrens;
 using ApplicationLayer.DTOs.Doctor;
+using ApplicationLayer.DTOs.Payments;
 using ApplicationLayer.DTOs.RatingFeedback;
 using ApplicationLayer.DTOs.User;
 using AutoMapper;

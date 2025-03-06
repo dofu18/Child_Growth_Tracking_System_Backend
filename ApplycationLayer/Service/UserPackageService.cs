@@ -1,6 +1,6 @@
 ﻿using Application.ResponseCode;
 using ApplicationLayer.DTOs.Package;
-using ApplicationLayer.DTOs.Payment;
+using ApplicationLayer.DTOs.Payments;
 using AutoMapper;
 using DomainLayer.Entities;
 using DomainLayer.Enum;
