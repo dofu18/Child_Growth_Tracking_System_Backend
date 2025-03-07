@@ -9,6 +9,7 @@ using ApplicationLayer.DTOs.Childrens;
 using ApplicationLayer.DTOs.Doctor;
 using ApplicationLayer.DTOs.Payments;
 using ApplicationLayer.DTOs.RatingFeedback;
+using ApplicationLayer.DTOs.Transaction;
 using ApplicationLayer.DTOs.User;
 using AutoMapper;
 using DomainLayer.Entities;
@@ -45,6 +46,7 @@ namespace ApplicationLayer.Mapper
             
             //Transaction
             CreateMap<Transaction, PaymentResponseDto>();
+            CreateMap<Transaction, TransactionDto>().ReverseMap();
         }
     }
 }
