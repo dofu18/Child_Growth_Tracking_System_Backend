@@ -18,6 +18,7 @@ using InfrastructureLayer.Database;
 using InfrastructureLayer.Repository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata;
 using static DomainLayer.Enum.GeneralEnum;
 
 namespace ApplicationLayer.Service
@@ -37,6 +38,8 @@ namespace ApplicationLayer.Service
 
     public class AuthService : IAuthService
     {
+        private readonly IGenericRepository<Role> _roleRepo;
+        private readonly IRoleService _roleService;
         private readonly IMapper _mapper;
         private readonly IJwtService _jwtService;
         private readonly ICryptoService _cryptoService;
@@ -54,10 +57,13 @@ namespace ApplicationLayer.Service
           ICryptoService cryptoService,
           ICacheService cacheService,
           IHttpContextAccessor httpCtx,
-          IMailService mailService
+          IMailService mailService,
+          IRoleService roleService,
+          IGenericRepository<Role> roleRepo
           //IFirebaseAdminService firebaseService
         )
         {
+            _roleRepo = roleRepo;
             _mapper = mapper;
             _jwtService = jwtService;
             _userRepo = userRepo;
@@ -65,12 +71,13 @@ namespace ApplicationLayer.Service
             _cacheService = cacheService;
             _httpCtx = httpCtx;
             _mailService = mailService;
+            _roleService = roleService;
             //_firebaseService = firebaseService;
         }
 
-        private string GenerateAccessTk(Guid userId, Guid sessionId, string email, UserStatusEnum status)
+        private string GenerateAccessTk(Guid userId, string role, Guid sessionId, string email, UserStatusEnum status)
         {
-            return _jwtService.GenerateToken(userId, sessionId, email, status, JwtConst.ACCESS_TOKEN_EXP);
+            return _jwtService.GenerateToken(userId, role, sessionId, email, status, JwtConst.ACCESS_TOKEN_EXP);
         }
 
         public async Task<GgAuthResp> HandleGoogleLogin(string redirect, string state, GgAuthInfo info)
@@ -101,7 +108,7 @@ namespace ApplicationLayer.Service
             }
 
             var sessionId = Guid.NewGuid();
-            var accessTk = GenerateAccessTk(user.Id, sessionId, user.Email, UserStatusEnum.NotVerified);
+            var accessTk = GenerateAccessTk(user.Id, user.Role.RoleName, sessionId, user.Email, UserStatusEnum.NotVerified);
 
             var redisKey = $"local:state:{state}";
             await _cacheService.Set(redisKey, user, TimeSpan.FromMinutes(15));
@@ -162,8 +169,10 @@ namespace ApplicationLayer.Service
                 return ErrorResp.BadRequest("Email or password is incorrect");
             }
 
+            var role =_roleRepo.FoundOrThrowAsync(user.RoleId);
+
             var sessionId = Guid.NewGuid();
-            var accessTk = GenerateAccessTk(user.Id, sessionId, user.Email, user.Status);
+             var accessTk = GenerateAccessTk(user.Id, role.Result.RoleName, sessionId, user.Email, user.Status);
             var accessTkExpAt = DateTimeOffset.UtcNow.AddSeconds(JwtConst.ACCESS_TOKEN_EXP).ToUnixTimeSeconds();
             var refreshTk = _cryptoService.GenerateRandomToken(JwtConst.REFRESH_TOKEN_LENGTH);
             var refreshTkExpAt = DateTimeOffset.UtcNow.AddSeconds(JwtConst.REFRESH_TOKEN_EXP).ToUnixTimeSeconds();
@@ -208,7 +217,7 @@ namespace ApplicationLayer.Service
             }
 
             var sessionId = Guid.NewGuid();
-            var accessTk = GenerateAccessTk(state.Id, sessionId, state.Email, state.Status);
+            var accessTk = GenerateAccessTk(state.Id, state.Role.RoleName, sessionId, state.Email, state.Status);
             var accessTkExpAt = DateTimeOffset.UtcNow.AddSeconds(JwtConst.ACCESS_TOKEN_EXP).ToUnixTimeSeconds();
             var refreshTk = _cryptoService.GenerateRandomToken(JwtConst.REFRESH_TOKEN_LENGTH);
             var refreshTkExpAt = DateTimeOffset.UtcNow.AddSeconds(JwtConst.REFRESH_TOKEN_EXP).ToUnixTimeSeconds();
@@ -244,7 +253,7 @@ namespace ApplicationLayer.Service
             }
 
             var sessionId = Guid.NewGuid();
-            var accessTk = GenerateAccessTk(user.Id, sessionId, user.Email, user.Status);
+            var accessTk = GenerateAccessTk(user.Id, user.Role.RoleName, sessionId, user.Email, user.Status);
             var accessTkExpAt = DateTimeOffset.UtcNow.AddSeconds(JwtConst.ACCESS_TOKEN_EXP).ToUnixTimeSeconds();
 
             return SuccessResp.Ok(new RefreshResp

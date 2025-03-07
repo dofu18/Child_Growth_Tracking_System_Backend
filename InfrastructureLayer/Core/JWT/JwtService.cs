@@ -12,7 +12,7 @@ namespace InfrastructureLayer.Core.JWT
 {
     public interface IJwtService
     {
-        string GenerateToken(Guid userId, Guid sessionId, string email, UserStatusEnum status, int exp);
+        string GenerateToken(Guid userId, string role, Guid sessionId, string email, UserStatusEnum status, int exp);
         Payload? ValidateToken(string token);
     }
 
@@ -28,7 +28,7 @@ namespace InfrastructureLayer.Core.JWT
             _handler = new JwtSecurityTokenHandler();
         }
 
-        public string GenerateToken(Guid userId, Guid sessionId, string email, UserStatusEnum status, int exp)
+        public string GenerateToken(Guid userId, string role, Guid sessionId, string email, UserStatusEnum status, int exp)
         {
             var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET") ?? DEFAULT_SECRET);
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -38,6 +38,7 @@ namespace InfrastructureLayer.Core.JWT
         new("sessionId", sessionId.ToString()),
         new("status", status.ToString()),
         new("email", email),
+        new("role", role.ToString()),
         //new("isAdmin", isAdmin.ToString())
               }),
                 Issuer = userId.ToString(),
