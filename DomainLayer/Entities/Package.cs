@@ -16,7 +16,7 @@ namespace DomainLayer.Entities
         public int TrialPeriodDays { get; set; }
         public int MaxChildrentAllowed {  get; set; }
         public Guid CreatedBy { get; set; }
-        public PackageStatusEnum Status { get; set; }
+        public PackageStatusEnum? Status { get; set; }
 
         //Navigation Properties
         public User CreatedUser { get; set; }
