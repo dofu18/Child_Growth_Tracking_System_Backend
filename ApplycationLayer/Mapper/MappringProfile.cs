@@ -40,10 +40,10 @@ namespace ApplicationLayer.Mapper
             CreateMap<RatingFeedback, RatingFeedbackUpdateDto>().ReverseMap();
             CreateMap<RatingFeedback, RatingFeedbackDto>().ReverseMap();
             //Package
-            
-            
-            //Transaction
-            CreateMap<Transaction, PaymentResponseDto>();
+
+
+           /* //Transaction
+            CreateMap<Transaction, PaymentResponseDto>();*/
         }
     }
 }
