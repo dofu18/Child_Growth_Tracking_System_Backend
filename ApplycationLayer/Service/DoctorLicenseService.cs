@@ -17,6 +17,7 @@ namespace ApplicationLayer.Service
 {
     public interface IDoctorLicenseService
     {
+        Task<IActionResult> HandleGetByUserIdAsync(Guid userId);
         Task<IActionResult> CreateDoctorProfile(DoctorDto dto);
         Task<IActionResult> GetAllDoctors();
         Task<IActionResult> UpdateDoctorProfile(Guid id, DoctorUpdateDto dto);
@@ -240,5 +241,11 @@ namespace ApplicationLayer.Service
             return SuccessResp.Ok("Doctor's profile has been shared successfully.");
         }
 
+        public async Task<IActionResult> HandleGetByUserIdAsync(Guid userId)
+        {
+            var user = await _licenseRepo.WhereAsync(d => d.UserId.Equals(userId), "User");
+
+            return SuccessResp.Ok(user);
+        }
     }
 }
