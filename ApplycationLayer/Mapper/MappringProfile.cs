@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using ApplicationLayer.DTOs.BmiCategory;
 using ApplicationLayer.DTOs.Children;
 using ApplicationLayer.DTOs.Childrens;
+using ApplicationLayer.DTOs.Package;
 using ApplicationLayer.DTOs.Doctor;
 using ApplicationLayer.DTOs.Payments;
 using ApplicationLayer.DTOs.RatingFeedback;
@@ -41,7 +42,11 @@ namespace ApplicationLayer.Mapper
             CreateMap<RatingFeedback,RatingFeedbackCreateDto>().ReverseMap();
             CreateMap<RatingFeedback, RatingFeedbackUpdateDto>().ReverseMap();
             CreateMap<RatingFeedback, RatingFeedbackDto>().ReverseMap();
+
             //Package
+            CreateMap<Package, PackageCreateDto>().ReverseMap();
+            CreateMap<Package, RenewPackageDto>().ReverseMap();
+            CreateMap<Package, PackageUpdateDto>().ReverseMap();
             
             
             //Transaction

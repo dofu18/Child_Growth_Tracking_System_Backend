@@ -1,7 +1,15 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using ApplicationLayer.DTOs.VNPAY;
+using AutoMapper;
+using DomainLayer.Entities;
+using DomainLayer.Enum;
+using InfrastructureLayer.Repository;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,53 +17,153 @@ namespace ApplicationLayer.Service
 {
     public interface IVNPAYService
     {
-        string CreatePaymentUrl(Guid userId, Guid packageId, decimal amount, string returnUrl);
+        Task<IActionResult> CreatePayment(Guid packageId, decimal money);
+        Task<IActionResult> ProcessVNPayReturn(VNPayReturnModel model);
+        string CreatePaymentUrl(int amount, string transactionId);
+        string GenerateSignature(string data, string secretKey);
     }
 
-    public class VNPayService : IVNPAYService
+    public class VNPayService : BaseService, IVNPAYService
     {
         private readonly IConfiguration _configuration;
+        private readonly IGenericRepository<UserPackage> _userPackageRepo;
+        private readonly IGenericRepository<Package> _packageRepo;
+        private readonly IGenericRepository<Transaction> _transactionRepo;
 
-        public VNPayService(IConfiguration configuration)
+        public VNPayService(IGenericRepository<UserPackage> userPackageRepo, IGenericRepository<Package> packageRepo, IGenericRepository<Transaction> transactionRepo, IConfiguration configuration, IMapper mapper, IHttpContextAccessor httpCtx)
+        : base(mapper, httpCtx)
         {
+            _userPackageRepo = userPackageRepo;
+            _packageRepo = packageRepo;
+            _transactionRepo = transactionRepo;
             _configuration = configuration;
         }
 
-        public string CreatePaymentUrl(Guid userId, Guid packageId, decimal amount, string returnUrl)
+        public async Task<IActionResult> CreatePayment(Guid packageId, decimal money)
         {
-            // Lấy mã website do VNPAY cấp từ appsettings.json
-            var vnp_TmnCode = _configuration["VNPAY:TmnCode"];
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return new UnauthorizedResult();
+            }
+            var userId = payload.UserId;
 
-            // Lấy URL cổng thanh toán của VNPAY từ appsettings.json
-            var vnp_Url = _configuration["VNPAY:BaseUrl"];
+            var package = await _packageRepo.FindByIdAsync(packageId);
+            if (package == null)
+                return new NotFoundObjectResult("Package not found.");
 
-            var vnp_HashSecret = _configuration["VNPAY:HashSecret"];
+            if (money != package.Price)
+                return new BadRequestObjectResult("Invalid amount for package.");
 
-            var time = DateTime.Now.ToString("yyyyMMddHHmmss");
+            var transaction = new Transaction
+            {
+                TransactionDate = DateTime.UtcNow,
+                Amount = money,
+                PaymentMethod = "VNPAY",
+                Currency = "VND",
+                TransactionType = "Payment",
+                PaymentStatus = GeneralEnum.PaymentStatusEnum.Pending,
+                PackageId = packageId,
+                UserId = userId,
+                MerchantTransactionId = Guid.NewGuid().ToString(),
+                Description = $"Payment for package {package.PackageName}"
+            };
 
-            // Tạo URL thanh toán VNPAY
-            var url = $"{vnp_Url}?vnp_Version=2.1.0" +  // Phiên bản VNPAY API
-                      $"&vnp_Command=pay" +            // Lệnh thanh toán
-                      $"&vnp_TmnCode={vnp_TmnCode}" +  // Mã website do VNPAY cấp
-                      $"&vnp_Amount={amount * 100}" +   // Số tiền thanh toán (VNPAY yêu cầu *100)
-                      $"&vnp_OrderInfo=Payment for package {packageId}" + // Nội dung đơn hàng
-                      $"&vnp_CreateDate={time}" +       // Thời gian tạo giao dịch
-                      $"&vnp_ReturnUrl={returnUrl}";    // URL callback sau khi thanh toán
+            await _transactionRepo.CreateAsync(transaction);
 
-            var signature = GenerateSignature(url, vnp_HashSecret);
-            url += $"&vnp_Signature={signature}";
-
-            return url;
+            var paymentUrl = CreatePaymentUrl((int)money, transaction.MerchantTransactionId);
+            return new OkObjectResult(new { url = string.IsNullOrEmpty(paymentUrl) ? "URL is empty" : paymentUrl });
         }
 
-        // Helper function to generate the VNPAY signature
-        private string GenerateSignature(string url, string secretKey)
+        public async Task<IActionResult> ProcessVNPayReturn(VNPayReturnModel model)
         {
-            var data = Encoding.ASCII.GetBytes(url + secretKey);
-            using (var hash = System.Security.Cryptography.MD5.Create())
+            var payload = ExtractPayload();
+            if (payload == null)
             {
-                var result = hash.ComputeHash(data);
-                return BitConverter.ToString(result).Replace("-", "").ToUpper();
+                return new UnauthorizedResult();
+            }
+            var userId = payload.UserId;
+
+            var transaction = await _transactionRepo.FoundOrThrowAsync(Guid.Parse(model.vnp_TxnRef), "Transaction not found");
+            if (transaction == null)
+                return new NotFoundObjectResult("Transaction not found.");
+
+            if (model.vnp_ResponseCode == "00")
+            {
+                transaction.PaymentStatus = GeneralEnum.PaymentStatusEnum.Successfully;
+                transaction.PaymentDate = DateTime.UtcNow;
+
+                var userPackage = new UserPackage
+                {
+                    OwnerId = userId,
+                    PackageId = transaction.PackageId,
+                    StartDate = DateOnly.FromDateTime(DateTime.UtcNow),
+                    ExpireDate = DateOnly.FromDateTime(DateTime.UtcNow).AddMonths(1),
+                    Status = GeneralEnum.UserPackageStatusEnum.OnGoing
+                };
+                await _userPackageRepo.CreateAsync(userPackage);
+            }
+            else
+            {
+                transaction.PaymentStatus = GeneralEnum.PaymentStatusEnum.Failed;
+            }
+
+            await _transactionRepo.UpdateAsync(transaction);
+            return model.vnp_ResponseCode == "00" ? new OkObjectResult("Payment Successful") : new BadRequestObjectResult("Payment Failed");
+        }
+
+        public string CreatePaymentUrl(int amount, string transactionId)
+        {
+            string baseUrl = _configuration.GetValue<string>("Vnpay:BaseUrl");
+            string returnUrl = _configuration.GetValue<string>("Vnpay:returnUrl");
+            string tmnCode = _configuration.GetValue<string>("Vnpay:TmnCode");
+            string hashSecret = _configuration.GetValue<string>("Vnpay:HashSecret");
+
+            if (string.IsNullOrEmpty(baseUrl))
+            {
+                Console.WriteLine("BaseUrl is missing");
+                return string.Empty;
+            }
+
+            var payParams = new SortedDictionary<string, string>
+            {
+                { "vnp_Version", "2.1.0" },
+                { "vnp_Command", "pay" },
+                { "vnp_TmnCode", tmnCode },
+                { "vnp_Amount", (amount * 100).ToString() },
+                { "vnp_CreateDate", DateTime.UtcNow.ToString("yyyyMMddHHmmss") },
+                { "vnp_CurrCode", "VND" },
+                { "vnp_IpAddr", "127.0.0.1" },
+                { "vnp_Locale", "vn" },
+                { "vnp_OrderInfo", $"Payment for transaction {transactionId}" },
+                { "vnp_OrderType", "other" },
+                { "vnp_ReturnUrl", returnUrl },
+                { "vnp_TxnRef", transactionId }
+            };
+
+            string rawData = string.Join("&", payParams.Select(p => $"{p.Key}={p.Value}"));
+            string secureHash = GenerateSignature(rawData, hashSecret);
+            return $"{baseUrl}?{rawData}&vnp_SecureHash={secureHash}";
+        }
+
+        public string GenerateSignature(string data, string secretKey)
+        {
+            Console.WriteLine($"Data: {data}");
+            Console.WriteLine($"SecretKey: {secretKey}");
+
+            if (string.IsNullOrEmpty(data))
+            {
+                throw new ArgumentNullException(nameof(data), "Data cannot be null or empty");
+            }
+            if (string.IsNullOrEmpty(secretKey))
+            {
+                throw new ArgumentNullException(nameof(secretKey), "SecretKey cannot be null or empty");
+            }
+
+            using (HMACSHA512 hmac = new HMACSHA512(Encoding.UTF8.GetBytes(secretKey)))
+            {
+                byte[] hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(data));
+                return BitConverter.ToString(hash).Replace("-", "").ToUpper();
             }
         }
     }
