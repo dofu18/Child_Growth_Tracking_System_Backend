@@ -172,7 +172,7 @@ namespace ApplicationLayer.Service
             var role =_roleRepo.FoundOrThrowAsync(user.RoleId);
 
             var sessionId = Guid.NewGuid();
-             var accessTk = GenerateAccessTk(user.Id, role.Result.RoleName, sessionId, user.Email, user.Status);
+             var accessTk = GenerateAccessTk(user.Id, role.Result.RoleName, sessionId, user.Email, (UserStatusEnum)user.Status);
             var accessTkExpAt = DateTimeOffset.UtcNow.AddSeconds(JwtConst.ACCESS_TOKEN_EXP).ToUnixTimeSeconds();
             var refreshTk = _cryptoService.GenerateRandomToken(JwtConst.REFRESH_TOKEN_LENGTH);
             var refreshTkExpAt = DateTimeOffset.UtcNow.AddSeconds(JwtConst.REFRESH_TOKEN_EXP).ToUnixTimeSeconds();
@@ -217,7 +217,7 @@ namespace ApplicationLayer.Service
             }
 
             var sessionId = Guid.NewGuid();
-            var accessTk = GenerateAccessTk(state.Id, state.Role.RoleName, sessionId, state.Email, state.Status);
+            var accessTk = GenerateAccessTk(state.Id, state.Role.RoleName, sessionId, state.Email, (UserStatusEnum)state.Status);
             var accessTkExpAt = DateTimeOffset.UtcNow.AddSeconds(JwtConst.ACCESS_TOKEN_EXP).ToUnixTimeSeconds();
             var refreshTk = _cryptoService.GenerateRandomToken(JwtConst.REFRESH_TOKEN_LENGTH);
             var refreshTkExpAt = DateTimeOffset.UtcNow.AddSeconds(JwtConst.REFRESH_TOKEN_EXP).ToUnixTimeSeconds();

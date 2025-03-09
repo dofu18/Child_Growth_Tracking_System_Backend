@@ -11,6 +11,6 @@ namespace DomainLayer.Entities
     {
         public string RoleName { get; set; }
         public string Description { get; set; }
-        public RoleStatusEnum Status { get; set; }
+        public RoleStatusEnum? Status { get; set; }
     }
 }

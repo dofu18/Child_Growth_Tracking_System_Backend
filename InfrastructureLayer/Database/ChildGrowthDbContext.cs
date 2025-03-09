@@ -70,7 +70,47 @@ namespace InfrastructureLayer.Database
                 e.Property(x => x.BmiBottom).IsRequired();
                 e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
                 e.Property(x => x.UpdatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
-
+            });
+            modelBuilder.Entity<BmiCategory>().HasData(new BmiCategory
+            {
+                Id = Guid.Parse("01955c45-f781-7835-8d4b-aff20764aca6"),
+                Name = "Under Weight",
+                BmiTop = 5,
+                BmiBottom = 0,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("01955c46-2df8-74fd-bbb1-c8c1d792ee5b"),
+                Name = "Healthy Weight",
+                BmiTop = 85,
+                BmiBottom = 5,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("01955c46-5e27-7c17-97ee-a06ded033c32"),
+                Name = "Over Weight",
+                BmiTop = 85,
+                BmiBottom = 95,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("01955c46-81c0-7e96-9961-3b490a2d1c8f"),
+                Name = "Obesity",
+                BmiTop = 95,
+                BmiBottom = 120,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("01955c46-a1d5-7fe9-a779-da396903a7a4"),
+                Name = "Servere Obesity",
+                BmiTop = 120,
+                BmiBottom = 140,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
             });
             modelBuilder.Entity<Children>(e =>
             {
@@ -127,6 +167,10 @@ namespace InfrastructureLayer.Database
                 e.Property(x => x.Specialize).IsRequired(false).HasMaxLength(200);
                 e.Property(x => x.Status).HasConversion<string>().HasDefaultValue(DoctorLicenseStatusEnum.Pending);
                 e.HasOne(x => x.User).WithOne().HasForeignKey<DoctorLicense>(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+                e.Property(x => x.RatingAvg).IsRequired();
+                e.Property(x => x.Degrees).IsRequired(false).HasMaxLength(500);
+                e.Property(x => x.Research).IsRequired(false).HasMaxLength(500);
+                e.Property(x => x.Languages).IsRequired(false).HasMaxLength(500);
                 e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
                 e.Property(x => x.UpdatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -189,6 +233,8 @@ namespace InfrastructureLayer.Database
                 e.Property(x => x.Rating).IsRequired();
                 e.Property(x => x.Feedback).IsRequired(false).HasMaxLength(500);
                 e.Property(x => x.Status).HasConversion<string>().HasDefaultValue(RatingFeedbackStatusEnum.Publish);
+                e.Property(x => x.RatingType).HasConversion<string>().HasDefaultValue(RatingTypeEnum.Doctor);
+                e.HasOne(x => x.Doctor).WithMany().HasForeignKey(x => x.DoctorId).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
                 e.Property(x => x.UpdatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
@@ -200,31 +246,31 @@ namespace InfrastructureLayer.Database
                 e.Property(x => x.Status).HasConversion<string>().HasDefaultValue(RoleStatusEnum.Pending);
 
             });
-            //modelBuilder.Entity<Role>().HasData(new Role
-            //{
-            //    Id = Guid.Parse(GeneralConst.DEFAULT_GUID),
-            //    RoleName = "Admin",
-            //    Description = "This person have fully permission of system",
-            //    Status = RoleStatusEnum.Active,
-            //}, new Role
-            //{
-            //    Id = Guid.Parse(GeneralConst.ROLE_STAFF_GUID),
-            //    RoleName = "Staff",
-            //    Description = "This person have under permission of admin",
-            //    Status = RoleStatusEnum.Active,
-            //}, new Role
-            //{
-            //    Id = Guid.Parse(GeneralConst.ROLE_USER_GUID),
-            //    RoleName = "User",
-            //    Description = "This person have limited permission of system",
-            //    Status = RoleStatusEnum.Active,
-            //}, new Role
-            //{
-            //    Id = Guid.Parse(GeneralConst.ROLE_DOCTOR_GUID),
-            //    RoleName = "Doctor",
-            //    Description = "This person have permission to response user",
-            //    Status = RoleStatusEnum.Active,
-            //});
+            modelBuilder.Entity<Role>().HasData(new Role
+            {
+                Id = Guid.Parse(GeneralConst.ADMIN_GUID),
+                RoleName = "Admin",
+                Description = "This person have fully permission of system",
+                Status = RoleStatusEnum.Active,
+            }, new Role
+            {
+                Id = Guid.Parse(GeneralConst.ROLE_STAFF_GUID),
+                RoleName = "Staff",
+                Description = "This person have under permission of admin",
+                Status = RoleStatusEnum.Active,
+            }, new Role
+            {
+                Id = Guid.Parse(GeneralConst.ROLE_USER_GUID),
+                RoleName = "User",
+                Description = "This person have limited permission of system",
+                Status = RoleStatusEnum.Active,
+            }, new Role
+            {
+                Id = Guid.Parse(GeneralConst.ROLE_DOCTOR_GUID),
+                RoleName = "Doctor",
+                Description = "This person have permission to response user",
+                Status = RoleStatusEnum.Active,
+            });
             modelBuilder.Entity<SharingProfile>(e =>
             {
                 e.HasKey(x => x.Id);

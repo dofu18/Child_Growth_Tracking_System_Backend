@@ -14,7 +14,7 @@ namespace DomainLayer.Entities
         public Guid OwnerId { get; set; }
         public DateOnly StartDate { get; set; }
         public DateOnly ExpireDate { get; set; }
-        public UserPackageStatusEnum Status { get; set; }
+        public UserPackageStatusEnum? Status { get; set; }
         //Navigation Properties
         //public User CreatedUser { get; set; }
         public Package Package { get; set; }
