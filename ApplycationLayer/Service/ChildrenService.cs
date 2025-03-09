@@ -67,34 +67,52 @@ namespace ApplicationLayer.Service
                 return ErrorResp.BadRequest("Dữ liệu không hợp lệ.");
             }
 
+            var child = _mapper.Map<Children>(dto);
+
             if (dto.Height <= 0 || dto.Weight <= 0)
             {
-                return ErrorResp.BadRequest("Chiều cao và cân nặng phải lớn hơn 0.");
+                child.Bmi = 0;
+                child.BmiPercentile = 0;
+
+                // Gán vào danh mục "No Information"
+                var noInfoCategory = await _bmiCategoryRepo.FirstOrDefaultAsync(c => c.Name == "No Information");
+                if (noInfoCategory != null)
+                {
+                    child.BmiCategoryId = noInfoCategory.Id;
+                }
+                else
+                {
+                    throw new Exception("Không tìm thấy danh mục BMI 'No Information'.");
+                }
             }
-
-            var child = _mapper.Map<Children>(dto);
-            child.Bmi = dto.Weight / ((dto.Height/100) * (dto.Height/100));
-
-            // Tìm danh mục BMI
-            var bmiCategory = await _bmiCategoryRepo.FirstOrDefaultAsync(c => child.Bmi >= c.BmiBottom && child.Bmi <= c.BmiTop);
-            if (bmiCategory == null)
-            {
-                throw new Exception("Không tìm thấy danh mục BMI phù hợp.");
-            }
-
-            child.BmiCategoryId = bmiCategory.Id;
-
-            // Tính BMI Percentile
-            if (child.Bmi < 14.0m)
-                child.BmiPercentile = 5;
-            else if (child.Bmi < 15.8m)
-                child.BmiPercentile = 50;
-            else if (child.Bmi < 17.0m)
-                child.BmiPercentile = 85;
-            else if (child.Bmi < 18.0m)
-                child.BmiPercentile = 95;
             else
-                child.BmiPercentile = 100;
+            {
+                child.Bmi = dto.Weight / ((dto.Height / 100) * (dto.Height / 100));
+
+                // Tìm danh mục BMI
+                var bmiCategory = await _bmiCategoryRepo.FirstOrDefaultAsync(c => child.Bmi >= c.BmiBottom && child.Bmi <= c.BmiTop);
+                if (bmiCategory == null)
+                {
+                    var noInfoCategory = await _bmiCategoryRepo.FirstOrDefaultAsync(c => c.Name == "No Information");
+                    child.BmiCategoryId = noInfoCategory.Id;
+                }
+                else
+                {
+                    child.BmiCategoryId = bmiCategory.Id;
+                }
+
+                // Tính BMI Percentile
+                if (child.Bmi < 14.0m)
+                    child.BmiPercentile = 5;
+                else if (child.Bmi < 15.8m)
+                    child.BmiPercentile = 50;
+                else if (child.Bmi < 17.0m)
+                    child.BmiPercentile = 85;
+                else if (child.Bmi < 18.0m)
+                    child.BmiPercentile = 95;
+                else
+                    child.BmiPercentile = 100;
+            }
 
             child.ParentId = userId;
             child.Status = ChildrentStatusEnum.Active;
@@ -103,6 +121,7 @@ namespace ApplicationLayer.Service
             await _childrenRepo.CreateAsync(child);
             return SuccessResp.Created("Children information added successfully");
         }
+
 
         public async Task<IActionResult> GetAll()
         {

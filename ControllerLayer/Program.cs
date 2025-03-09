@@ -1,4 +1,5 @@
 using ApplicationLayer.Service;
+using DomainLayer.Entities;
 using InfrastructureLayer.Core.Cache;
 using InfrastructureLayer.Core.Crypto;
 using InfrastructureLayer.Core.JWT;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
+using static ApplicationLayer.Service.IUserPackageService;
 
 var builder = WebApplication.CreateBuilder(args);
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
