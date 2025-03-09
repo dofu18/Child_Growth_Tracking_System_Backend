@@ -107,8 +107,10 @@ namespace ApplicationLayer.Service
                 }
             }
 
+            var role = _roleRepo.FoundOrThrowAsync(user.RoleId);
+
             var sessionId = Guid.NewGuid();
-            var accessTk = GenerateAccessTk(user.Id, user.Role.RoleName, sessionId, user.Email, UserStatusEnum.NotVerified);
+            var accessTk = GenerateAccessTk(user.Id, role.Result.RoleName, sessionId, user.Email, UserStatusEnum.NotVerified);
 
             var redisKey = $"local:state:{state}";
             await _cacheService.Set(redisKey, user, TimeSpan.FromMinutes(15));
@@ -216,8 +218,10 @@ namespace ApplicationLayer.Service
                 return ErrorResp.BadRequest("Cannot verify token");
             }
 
+            var role = _roleRepo.FoundOrThrowAsync(state.RoleId);
+
             var sessionId = Guid.NewGuid();
-            var accessTk = GenerateAccessTk(state.Id, state.Role.RoleName, sessionId, state.Email, (UserStatusEnum)state.Status);
+            var accessTk = GenerateAccessTk(state.Id, role.Result.RoleName, sessionId, state.Email, (UserStatusEnum)state.Status);
             var accessTkExpAt = DateTimeOffset.UtcNow.AddSeconds(JwtConst.ACCESS_TOKEN_EXP).ToUnixTimeSeconds();
             var refreshTk = _cryptoService.GenerateRandomToken(JwtConst.REFRESH_TOKEN_LENGTH);
             var refreshTkExpAt = DateTimeOffset.UtcNow.AddSeconds(JwtConst.REFRESH_TOKEN_EXP).ToUnixTimeSeconds();

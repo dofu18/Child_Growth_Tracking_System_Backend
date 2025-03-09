@@ -11,19 +11,6 @@ namespace InfrastructureLayer.Database
 {
     public class ChildGrowthDbContextFactory : IDesignTimeDbContextFactory<ChildGrowthDbContext>
     {
-        //public ChildGrowthDbContext CreateDbContext(string[] args)
-        //{
-        //    var configuration = new ConfigurationBuilder()
-        //      .AddJsonFile("appsettings.json")
-        //      .Build();
-
-        //    Console.WriteLine($"Using ConnectionString: {configuration.GetConnectionString("DefaultConnection")}");
-
-        //    var optionsBuilder = new DbContextOptionsBuilder<ChildGrowthDbContext>();
-        //    optionsBuilder.UseNpgsql(configuration.GetConnectionString("DefaultConnection") ?? "");
-
-        //    return new ChildGrowthDbContext(optionsBuilder.Options);
-        //}
         public ChildGrowthDbContext CreateDbContext(string[] args)
         {
             var configPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "ControllerLayer");
