@@ -13,14 +13,14 @@ namespace ControllerLayer.Controllers
         private readonly IPaymentService _paymentService;
         private readonly ILogger<PaymentController> _logger;
 
-    public PaymentController(ILogger<PaymentController> logger, IPaymentService paymentService)
+        public PaymentController(ILogger<PaymentController> logger, IPaymentService paymentService)
         {
             _logger = logger;
             _paymentService = paymentService;
         }
 
-    [Protected]
-    [HttpPost("vnpay")]
+        [Protected]
+        [HttpPost("vnpay")]
         public async Task<IActionResult> CreateVnpayPayment([FromBody] PaymentRequestDto request)
         {
             try
@@ -40,8 +40,8 @@ namespace ControllerLayer.Controllers
             }
         }
 
-    [Protected]
-    [HttpGet("vnpay-return")]
+        [Protected]
+        [HttpGet("vnpay-return")]
         public async Task<IActionResult> VnpayReturn()
         {
             if (Request.QueryString.HasValue)
@@ -64,6 +64,14 @@ namespace ControllerLayer.Controllers
                 }
             }
             return NotFound("Không tìm thấy thông tin thanh toán");
+        }
+
+        [Protected]
+        [HttpGet("all")]
+        public async Task<ActionResult<List<PaymentListDto>>> GetAllPayments()
+        {
+            var payments = await _paymentService.GetAllPayments();
+            return Ok(payments);
         }
     }
 }

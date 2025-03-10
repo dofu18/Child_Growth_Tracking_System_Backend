@@ -23,6 +23,7 @@ namespace ApplicationLayer.Service
     {
         Task<string> CreateVnpayPaymentAsync(HttpContext context, PaymentRequestDto request);
         Task<PaymentResponseDto> CallBack(IQueryCollection queryParams);
+        Task<List<PaymentListDto>> GetAllPayments();
     }
 
     public class PaymentService : BaseService, IPaymentService
@@ -149,6 +150,17 @@ namespace ApplicationLayer.Service
                 Token = vnp_SecureHash,
                 VnPayResponseCode = vnp_ResponseCode
             };
+        }
+
+        public async Task<List<PaymentListDto>> GetAllPayments()
+        {
+            var transactions = await _transactionRepository.WhereAsync(
+                filter: null,  // Lấy tất cả giao dịch
+                orderBy: q => q.OrderByDescending(t => t.TransactionDate),
+                navigationProperties: new string[] { "User", "Package" } // Load User & Package
+   );
+
+            return _mapper.Map<List<PaymentListDto>>(transactions);
         }
     }
 }
