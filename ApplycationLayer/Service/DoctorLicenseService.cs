@@ -19,13 +19,16 @@ namespace ApplicationLayer.Service
     {
         Task<IActionResult> HandleGetByUserIdAsync(Guid userId);
         Task<IActionResult> CreateDoctorProfile(DoctorDto dto);
+        Task<IActionResult> ApproveDoctorProfile(Guid id);
         Task<IActionResult> GetAllDoctors();
         Task<IActionResult> UpdateDoctorProfile(Guid id, DoctorUpdateDto dto);
         Task<IActionResult> GetDoctorByBiography(string biography);
         Task<IActionResult> DeleteDoctorProfile(Guid id);
         /*Task<IActionResult> HideDoctorProfile(Guid doctorId, bool isHidden);*/
         Task<IActionResult> ShareDoctorProfile(Guid doctorId, Guid receiverId);
+        Task<IActionResult> UpdateStatusDoctor(Guid doctorLicenseId, DoctorLicenseStatusEnum status);
     }
+
 
     public class DoctorLicenseService : BaseService, IDoctorLicenseService
     {
@@ -57,8 +60,62 @@ namespace ApplicationLayer.Service
             doctorLicense.UpdatedAt = DateTime.Now;
             doctorLicense.Status = DoctorLicenseStatusEnum.Pending; // Đợi admin duyệt
 
+            var existingDoctorLicense = await _licenseRepo.FindByIdAsync(userId);
+            if (existingDoctorLicense != null)
+            {
+                return ErrorResp.BadRequest("Doctor profile already exists for this user.");
+            }
+
             await _licenseRepo.CreateAsync(doctorLicense);
             return SuccessResp.Created("Doctor profile information added successfully, pending admin approval.");
+        }
+
+        public async Task<IActionResult> ApproveDoctorProfile(Guid id)
+        {
+            // Find the doctor license by ID
+            var doctorLicense = await _licenseRepo.FindByIdAsync(id);
+            if (doctorLicense == null)
+            {
+                return ErrorResp.NotFound("Doctor profile not found.");
+            }
+
+            // Update the doctor license status to Approved
+            doctorLicense.Status = DoctorLicenseStatusEnum.Published; // Assuming "Published" indicates approval
+            doctorLicense.UpdatedAt = DateTime.Now;
+
+            await _licenseRepo.UpdateAsync(doctorLicense);
+
+            // Update the user's role to Doctor
+            var user = await _userRepo.FindByIdAsync(doctorLicense.UserId);
+            if (user == null)
+            {
+                return ErrorResp.NotFound("User not found.");
+            }
+
+            // Assuming you have a predefined GUID for the Doctor role
+            var doctorRoleId = new Guid("INSERT_DOCTOR_ROLE_ID_HERE"); // Replace with the actual Doctor role ID
+            user.RoleId = doctorRoleId; // Assign the Doctor role to the user
+            await _userRepo.UpdateAsync(user);
+
+            return SuccessResp.Ok("Doctor profile approved and user role updated successfully.");
+        }
+
+        public async Task<IActionResult> UpdateStatusDoctor(Guid doctorLicenseId, DoctorLicenseStatusEnum status)
+        {
+            // Tìm giấy phép bác sĩ bằng ID
+            var doctorLicense = await _licenseRepo.FindByIdAsync(doctorLicenseId);
+            if (doctorLicense == null)
+            {
+                return ErrorResp.NotFound("Doctor profile not found.");
+            }
+
+            // Cập nhật trạng thái giấy phép bác sĩ
+            doctorLicense.Status = status;
+            doctorLicense.UpdatedAt = DateTime.Now;
+
+            await _licenseRepo.UpdateAsync(doctorLicense);
+
+            return SuccessResp.Ok($"Doctor profile status updated to {status} successfully.");
         }
 
 
@@ -134,9 +191,6 @@ namespace ApplicationLayer.Service
 
             return SuccessResp.Ok(result);
         }
-
-
-
 
         public async Task<IActionResult> DeleteDoctorProfile(Guid id)
         {
