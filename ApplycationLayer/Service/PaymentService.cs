@@ -118,7 +118,7 @@ namespace ApplicationLayer.Service
             {
                 if (!string.IsNullOrEmpty(key) && key.StartsWith("vnp_"))
                 {
-                    vnpay.AddResponseData(key, value.ToString());
+                    vnpay.AddResponseData(key, value);
                 }
             }
 
@@ -133,22 +133,19 @@ namespace ApplicationLayer.Service
             {
                 return new PaymentResponseDto
                 {
-                    Success = false,
-                    VnPayResponseCode = "99"
+                    Success = false
                 };
 
             }
 
-            // Xử lý kết quả thanh toán dựa trên mã phản hồi của VNPAY
-            var success = vnp_ResponseCode == "00";
-
             return new PaymentResponseDto
             {
-                Success = success,
+                Success = true,
                 PaymentMethod = "VNPAY",
                 OrderDescription = vnp_OrderInfo,
                 OrderId = vnp_merchantTransactionId.ToString(),
                 TransactionId = vnp_TransactionId.ToString(),
+                PaymentId = vnp_TransactionId.ToString(),
                 Token = vnp_SecureHash,
                 VnPayResponseCode = vnp_ResponseCode
             };
