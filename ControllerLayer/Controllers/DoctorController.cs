@@ -16,17 +16,13 @@ namespace ControllerLayer.Controllers
     {
         private readonly IDoctorLicenseService _doctorService;
         private readonly ILogger<DoctorController> _logger;
-        private readonly IGenericRepository<DoctorLicense> _licenseRepo;
-        private readonly IGenericRepository<User> _userRepo;
 
 
 
-        public DoctorController(ILogger<DoctorController> logger, IDoctorLicenseService doctorService,IGenericRepository<DoctorLicense> licenseRepo,IGenericRepository<User> userRepo)
+        public DoctorController(ILogger<DoctorController> logger, IDoctorLicenseService doctorService)
         {
             _logger = logger;
             _doctorService = doctorService;
-            _licenseRepo = licenseRepo;
-            _userRepo = userRepo;
         }
 
 
