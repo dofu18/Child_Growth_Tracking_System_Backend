@@ -48,7 +48,6 @@ namespace ApplicationLayer.Mapper
             CreateMap<Package, RenewPackageDto>().ReverseMap();
             CreateMap<Package, PackageUpdateDto>().ReverseMap();
             
-            
             //Transaction
             CreateMap<Transaction, PaymentResponseDto>();
             CreateMap<Transaction, TransactionDto>().ReverseMap();
