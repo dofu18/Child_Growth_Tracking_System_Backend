@@ -30,6 +30,7 @@ namespace ApplicationLayer.Service
         Task<IActionResult> GetAll();
         Task<IActionResult> Update(Guid id, ChildrenUpdateDto dto);
         Task<IActionResult> GetChildByParent(Guid parentId);
+        Task<IActionResult> GetChildByToken();
         Task<IActionResult> Delete(Guid id);
         Task<IActionResult> HideChildren(Guid childId, bool isHidden);
         Task<IActionResult> SharingProfile(Guid childId, Guid receiverId);
@@ -132,7 +133,7 @@ namespace ApplicationLayer.Service
 
             var userId = payload.UserId;
 
-            var children = await _childrenRepo.WhereAsync(c => c.ParentId == userId && c.Status == ChildrentStatusEnum.Active);
+            var children = await _childrenRepo.WhereAsync(c => c.Status == ChildrentStatusEnum.Active);
             var result = _mapper.Map<List<ChildrentResponseDto>>(children);
 
             return SuccessResp.Ok(result);
@@ -166,7 +167,7 @@ namespace ApplicationLayer.Service
             return SuccessResp.Ok("Children information updated successfully");
         }
 
-        public async Task<IActionResult> GetChildByParent(Guid parentId)
+        public async Task<IActionResult> GetChildByToken()
         {
             var payload = ExtractPayload();
             if (payload == null)
@@ -174,7 +175,28 @@ namespace ApplicationLayer.Service
                 return ErrorResp.Unauthorized("Invalid token");
             }
 
-            var chidren = await _childrenRepo.WhereAsync(c => c.Status == ChildrentStatusEnum.Active);
+            var userId = payload.UserId;
+
+            var chidren = await _childrenRepo.WhereAsync(c => c.ParentId == userId && c.Status == ChildrentStatusEnum.Active);
+
+            if (!chidren.Any())
+            {
+                return ErrorResp.NotFound("No children found for this parent");
+            }
+            var result = _mapper.Map<List<ChildrentResponseDto>>(chidren);
+
+            return SuccessResp.Ok(chidren);
+        }
+
+        public async Task<IActionResult> GetChildByParent(Guid parentid)
+        {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+
+            var chidren = await _childrenRepo.WhereAsync(c => c.ParentId == parentid && c.Status == ChildrentStatusEnum.Active);
 
             if (!chidren.Any())
             {

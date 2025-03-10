@@ -31,7 +31,16 @@ namespace ControllerLayer.Controllers
         }
 
         [Protected]
-        [HttpGet("getChildByParent/{parentId}")]
+        [HttpGet("getChildByToken")]
+        public async Task<IActionResult> GetChildByToken()
+        {
+            _logger.LogInformation("Get all children by parent request received");
+
+            return await _childrenService.GetChildByToken();
+        }
+
+        [Protected]
+        [HttpGet("getChildByParent")]
         public async Task<IActionResult> GetChildByParent([FromRoute] Guid parentId)
         {
             _logger.LogInformation("Get all children by parent request received");
