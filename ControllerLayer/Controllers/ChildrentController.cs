@@ -40,6 +40,15 @@ namespace ControllerLayer.Controllers
         }
 
         [Protected]
+        [HttpGet("getAll")]
+        public async Task<IActionResult> GetAll()
+        {
+            _logger.LogInformation("Get all children request received");
+
+            return await _childrenService.GetAll();
+        }
+
+        [Protected]
         [HttpPut("/update/{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] ChildrenUpdateDto dto)
         {

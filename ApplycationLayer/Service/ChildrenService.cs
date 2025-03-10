@@ -173,9 +173,8 @@ namespace ApplicationLayer.Service
             {
                 return ErrorResp.Unauthorized("Invalid token");
             }
-            var userId = payload.UserId;
 
-            var chidren = await _childrenRepo.WhereAsync(c => c.ParentId == userId && c.Status == ChildrentStatusEnum.Active);
+            var chidren = await _childrenRepo.WhereAsync(c => c.Status == ChildrentStatusEnum.Active);
 
             if (!chidren.Any())
             {
