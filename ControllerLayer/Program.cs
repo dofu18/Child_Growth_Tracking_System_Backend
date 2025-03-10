@@ -112,7 +112,7 @@ builder.Services.AddScoped<ITracsactionService, TransactionService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserPackageService, UserPackageService>();
-builder.Services.AddScoped<IVNPAYService, VNPayService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 var app = builder.Build();
 

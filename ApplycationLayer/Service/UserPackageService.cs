@@ -28,15 +28,13 @@ namespace ApplicationLayer.Service
         private readonly IGenericRepository<UserPackage> _userPackageRepo;
         private readonly IGenericRepository<Package> _packageRepo;
         private readonly IGenericRepository<Transaction> _transactionRepo;
-        private readonly IVNPAYService _vnPayService;
         private readonly IConfiguration _configuration;
 
-        public UserPackageService(IGenericRepository<UserPackage> userPackageRepo, IGenericRepository<Package> packageRepo, IGenericRepository<Transaction> transactionRepo, IVNPAYService vnPayService, IConfiguration configuration, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
+        public UserPackageService(IGenericRepository<UserPackage> userPackageRepo, IGenericRepository<Package> packageRepo, IGenericRepository<Transaction> transactionRepo, IConfiguration configuration, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
         {
             _userPackageRepo = userPackageRepo;
             _packageRepo = packageRepo;
             _transactionRepo = transactionRepo;
-            _vnPayService = vnPayService;
             _configuration = configuration;
         }
 
