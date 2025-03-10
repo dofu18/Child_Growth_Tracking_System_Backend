@@ -13,7 +13,7 @@ namespace DomainLayer.Entities
         public DateTime RequestDate { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
-        public ConsultationRequestStatusEnum Status { get; set; }
+        public ConsultationRequestStatusEnum? Status { get; set; }
         public string Attachments { get; set; }
         public Guid UserRequestId { get; set; }
         public Guid DoctorReceiveId {  get; set; }

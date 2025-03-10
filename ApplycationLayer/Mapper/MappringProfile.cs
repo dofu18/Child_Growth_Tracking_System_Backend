@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 using ApplicationLayer.DTOs.BmiCategory;
 using ApplicationLayer.DTOs.Children;
 using ApplicationLayer.DTOs.Childrens;
+using ApplicationLayer.DTOs.Package;
+using ApplicationLayer.DTOs.Doctor;
+using ApplicationLayer.DTOs.Payments;
+using ApplicationLayer.DTOs.RatingFeedback;
+using ApplicationLayer.DTOs.Transaction;
 using ApplicationLayer.DTOs.User;
 using AutoMapper;
 using DomainLayer.Entities;
@@ -20,11 +25,33 @@ namespace ApplicationLayer.Mapper
             //BmiCategory
             CreateMap<BmiCategory, BmiCategoryCreateDto>().ReverseMap();
 
+            //Children
             CreateMap<Children, ChildrenCreateDto>().ReverseMap();
             CreateMap<Children, ChildrentResponseDto>();
             CreateMap<Children, ChildrenUpdateDto>().ReverseMap();
+
             //User
             CreateMap<User, UserDto>().ReverseMap();
+            CreateMap<User, UserUpdateDto>().ReverseMap();
+
+            //Doctor
+            CreateMap<DoctorLicense, DoctorDto>().ReverseMap();
+            CreateMap<DoctorLicense, DoctorUpdateDto>().ReverseMap();
+
+            //RatingFeedback
+            CreateMap<RatingFeedback,RatingFeedbackCreateDto>().ReverseMap();
+            CreateMap<RatingFeedback, RatingFeedbackUpdateDto>().ReverseMap();
+            CreateMap<RatingFeedback, RatingFeedbackDto>().ReverseMap();
+
+            //Package
+            CreateMap<Package, PackageCreateDto>().ReverseMap();
+            CreateMap<Package, RenewPackageDto>().ReverseMap();
+            CreateMap<Package, PackageUpdateDto>().ReverseMap();
+            
+            
+            //Transaction
+            CreateMap<Transaction, PaymentResponseDto>();
+            CreateMap<Transaction, TransactionDto>().ReverseMap();
         }
     }
 }

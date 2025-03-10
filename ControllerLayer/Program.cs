@@ -1,4 +1,5 @@
 using ApplicationLayer.Service;
+using DomainLayer.Entities;
 using InfrastructureLayer.Core.Cache;
 using InfrastructureLayer.Core.Crypto;
 using InfrastructureLayer.Core.JWT;
@@ -10,9 +11,10 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
+using static ApplicationLayer.Service.IUserPackageService;
 
 var builder = WebApplication.CreateBuilder(args);
-var CORS = "AllowAllOrigins";
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -52,15 +54,15 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Configure CORS
+// Add CORS Policy
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(CORS,
-        builder =>
+    options.AddPolicy(MyAllowSpecificOrigins,
+        policy =>
         {
-            builder.SetIsOriginAllowedToAllowWildcardSubdomains()
-                  .AllowAnyOrigin()
-                  .AllowAnyMethod()
-                  .AllowAnyHeader();
+            policy.WithOrigins("http://localhost:5173") // Allow frontend domain
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
         });
 });
 //Google OAuth
@@ -103,8 +105,14 @@ builder.Services.AddSingleton<IMailService>(new MailService("smtp.gmail.com", 58
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IBmiCategoryService, BmiCategoryService>();
 builder.Services.AddScoped<IChildrenService, ChildrenService>();
-
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IDoctorLicenseService, DoctorLicenseService>();
+builder.Services.AddScoped<IRatingFeedbackService, RatingFeedbackService>();
+builder.Services.AddScoped<ITracsactionService, TransactionService>();
+builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserPackageService, UserPackageService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 var app = builder.Build();
 
@@ -114,11 +122,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseRouting();
+app.UseCors(MyAllowSpecificOrigins);
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
+
 
 app.Run();

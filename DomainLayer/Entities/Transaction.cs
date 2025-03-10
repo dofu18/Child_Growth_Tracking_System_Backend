@@ -20,8 +20,8 @@ namespace DomainLayer.Entities
         // Ngày thực hiện giao dịch thành công
         public DateTime PaymentDate { get; set; }
 
-        public string MerchantTransactionId { get; set; }
-        public PaymentStatusEnum PaymentStatus { get; set; }
+        public string MerchantTransactionId { get; set; }   
+        public PaymentStatusEnum? PaymentStatus { get; set; }
         public string Description { get; set; }
 
         //Navigation Properties

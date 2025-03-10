@@ -8,6 +8,7 @@ using DomainLayer.Entities;
 using DomainLayer.Exceptions;
 using InfrastructureLayer.Database;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Asn1;
 
 namespace InfrastructureLayer.Repository
 {
@@ -21,9 +22,21 @@ namespace InfrastructureLayer.Repository
             dbSet = context.Set<T>();
         }
 
-        public Task<int> CountAsync()
+        public async Task<int> CountAsync()
         {
-            throw new NotImplementedException();
+            return await dbSet.AsNoTracking().CountAsync();
+        }
+
+        public virtual async Task<int> CountAsync(Expression<Func<T, bool>>? filter = null)
+        {
+            IQueryable<T> query = dbSet;
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            return await query.CountAsync();
         }
 
         public virtual async Task<T> CreateAsync(T entity)
@@ -127,15 +140,37 @@ namespace InfrastructureLayer.Repository
             await _context.SaveChangesAsync();
         }
 
-        public virtual async Task<IList<T>> WhereAsync(Expression<Func<T, bool>> predicate, params string[] navigationProperties)
+        public virtual async Task<List<T>> WhereAsync(Expression<Func<T, bool>> predicate, params string[] navigationProperties)
         {
             List<T> list;
             var query = dbSet.AsQueryable();
             foreach (string navigationProperty in navigationProperties)
                 query = query.Include(navigationProperty);//got to reaffect it.
 
-            list = await query.Where(predicate).AsNoTracking().ToListAsync<T>();
+            list = await query.Where(predicate).ToListAsync<T>();
             return list;
+        }
+
+        public virtual async Task<List<T>> WhereAsync(Expression<Func<T, bool>>? filter = null, Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null, int? page = null, int? pageSize = null, params string[] navigationProperties)
+        {
+            IQueryable<T> query = ApplyNavigation(navigationProperties);
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            if (orderBy != null)
+            {
+                query = orderBy(query);
+            }
+
+            if (page.HasValue && pageSize.HasValue)
+            {
+                query = query.Skip(page.Value * pageSize.Value).Take(pageSize.Value);
+            }
+
+            return await query.AsNoTracking().ToListAsync();
         }
 
         private IQueryable<T> ApplyNavigation(params string[] navigationProperties)

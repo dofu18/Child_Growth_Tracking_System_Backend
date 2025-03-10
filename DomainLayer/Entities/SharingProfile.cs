@@ -15,5 +15,7 @@ namespace DomainLayer.Entities
         public User User { get; set; }
         public Children Children { get; set; }
 
+        public Guid DoctorId { get; set; }
+
     }
 }

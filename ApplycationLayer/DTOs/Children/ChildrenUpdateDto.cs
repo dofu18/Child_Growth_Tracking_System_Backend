@@ -3,15 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static DomainLayer.Enum.GeneralEnum;
 
 namespace ApplicationLayer.DTOs.Children
 {
     public class ChildrenUpdateDto
     {
         public string Name { get; set; }
-        public DateTime DateOfBirth { get; set; }
-        public string Gender { get; set; }
-        public float Weight { get; set; }
-        public float Height { get; set; }
+        public DateOnly DoB { get; set; }
+        public GenderEnum Gender { get; set; }
+        public decimal Weight { get; set; }
+        public decimal Height { get; set; }
+        public string Notes { get; set; }
     }
 }
