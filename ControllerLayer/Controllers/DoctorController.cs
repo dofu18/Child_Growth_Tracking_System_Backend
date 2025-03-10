@@ -93,5 +93,11 @@ namespace ControllerLayer.Controllers
         {
             return await _doctorService.ShareDoctorProfile(doctorId, receiverId);
         }
+
+        [HttpGet("doctorprofile/{userId}")]
+        public async Task<IActionResult> GetDoctorProfile([FromRoute] Guid userId)
+        {
+            return await _doctorService.HandleGetByUserIdAsync(userId);
+        }
     }
 }

@@ -22,7 +22,7 @@ namespace ControllerLayer.Controllers
         [Protected]
         [HttpGet("profile")]
         public async Task<IActionResult> GetProfile()
-        {
+        {                                                                     
             _logger.LogInformation("Get user profile request received");
 
             return await _service.HandleGetByIdAsync();
