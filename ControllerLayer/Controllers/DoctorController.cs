@@ -39,37 +39,19 @@ namespace ControllerLayer.Controllers
         }
 
         [HttpPut("approve-doctor-profile/{doctorLicenseId}")]
-        [Authorize(Roles = "Admin")] // Ensure only admins can access this endpoint
+        [Authorize(Roles = "Admin")] // Chỉ cho phép Admin truy cập
         public async Task<IActionResult> ApproveDoctorProfile(Guid doctorLicenseId)
         {
-            // Find the doctor license by ID
-            var doctorLicense = await _licenseRepo.FindByIdAsync(doctorLicenseId);
-            if (doctorLicense == null)
-            {
-                return ErrorResp.NotFound("Doctor profile not found.");
-            }
-
-            // Update the doctor license status to Published
-            doctorLicense.Status = DoctorLicenseStatusEnum.Published; // Assuming "Published" means approval
-            doctorLicense.UpdatedAt = DateTime.Now;
-
-            await _licenseRepo.UpdateAsync(doctorLicense);
-
-            // Update the user's role to Doctor
-            var user = await _userRepo.FindByIdAsync(doctorLicense.UserId);
-            if (user == null)
-            {
-                return ErrorResp.NotFound("User not found.");
-            }
-
-            // Assuming you have the predefined GUID for the Doctor role
-            var doctorRoleId = new Guid("INSERT_DOCTOR_ROLE_ID_HERE"); // Replace this with the actual role ID
-            user.RoleId = doctorRoleId; // Assign the Doctor role
-            await _userRepo.UpdateAsync(user);
-
-            return SuccessResp.Ok("Doctor profile approved and user role updated successfully.");
+            return await _doctorService.ApproveDoctorProfile(doctorLicenseId);
         }
 
+        [HttpPut("update-doctor-status/{doctorLicenseId}")]
+        [Authorize(Roles = "Admin")] // Chỉ dành cho Admin
+        public async Task<IActionResult> UpdateStatusDoctor(Guid doctorLicenseId, [FromBody] DoctorLicenseStatusEnum status)
+        {
+            // Gọi service xử lý logic
+            return await _doctorService.UpdateStatusDoctor(doctorLicenseId, status);
+        }
 
 
         [HttpGet("all")]

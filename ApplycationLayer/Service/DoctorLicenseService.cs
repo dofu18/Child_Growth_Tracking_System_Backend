@@ -18,13 +18,16 @@ namespace ApplicationLayer.Service
     public interface IDoctorLicenseService
     {
         Task<IActionResult> CreateDoctorProfile(DoctorDto dto);
+        Task<IActionResult> ApproveDoctorProfile(Guid id);
         Task<IActionResult> GetAllDoctors();
         Task<IActionResult> UpdateDoctorProfile(Guid id, DoctorUpdateDto dto);
         Task<IActionResult> GetDoctorByBiography(string biography);
         Task<IActionResult> DeleteDoctorProfile(Guid id);
         /*Task<IActionResult> HideDoctorProfile(Guid doctorId, bool isHidden);*/
         Task<IActionResult> ShareDoctorProfile(Guid doctorId, Guid receiverId);
+        Task<IActionResult> UpdateStatusDoctor(Guid doctorLicenseId, DoctorLicenseStatusEnum status);
     }
+
 
     public class DoctorLicenseService : BaseService, IDoctorLicenseService
     {
@@ -66,10 +69,10 @@ namespace ApplicationLayer.Service
             return SuccessResp.Created("Doctor profile information added successfully, pending admin approval.");
         }
 
-        public async Task<IActionResult> ApproveDoctorProfile(Guid doctorLicenseId)
+        public async Task<IActionResult> ApproveDoctorProfile(Guid id)
         {
             // Find the doctor license by ID
-            var doctorLicense = await _licenseRepo.FindByIdAsync(doctorLicenseId);
+            var doctorLicense = await _licenseRepo.FindByIdAsync(id);
             if (doctorLicense == null)
             {
                 return ErrorResp.NotFound("Doctor profile not found.");
@@ -94,6 +97,24 @@ namespace ApplicationLayer.Service
             await _userRepo.UpdateAsync(user);
 
             return SuccessResp.Ok("Doctor profile approved and user role updated successfully.");
+        }
+
+        public async Task<IActionResult> UpdateStatusDoctor(Guid doctorLicenseId, DoctorLicenseStatusEnum status)
+        {
+            // Tìm giấy phép bác sĩ bằng ID
+            var doctorLicense = await _licenseRepo.FindByIdAsync(doctorLicenseId);
+            if (doctorLicense == null)
+            {
+                return ErrorResp.NotFound("Doctor profile not found.");
+            }
+
+            // Cập nhật trạng thái giấy phép bác sĩ
+            doctorLicense.Status = status;
+            doctorLicense.UpdatedAt = DateTime.Now;
+
+            await _licenseRepo.UpdateAsync(doctorLicense);
+
+            return SuccessResp.Ok($"Doctor profile status updated to {status} successfully.");
         }
 
 
@@ -169,9 +190,6 @@ namespace ApplicationLayer.Service
 
             return SuccessResp.Ok(result);
         }
-
-
-
 
         public async Task<IActionResult> DeleteDoctorProfile(Guid id)
         {
