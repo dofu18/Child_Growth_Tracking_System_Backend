@@ -13,14 +13,14 @@ namespace ControllerLayer.Controllers
         private readonly IPaymentService _paymentService;
         private readonly ILogger<PaymentController> _logger;
 
-    public PaymentController(ILogger<PaymentController> logger, IPaymentService paymentService)
+        public PaymentController(ILogger<PaymentController> logger, IPaymentService paymentService)
         {
             _logger = logger;
             _paymentService = paymentService;
         }
 
         [Protected]
-    [HttpPost("vnpay")]
+        [HttpPost("vnpay")]
         public async Task<IActionResult> CreateVnpayPayment([FromBody] PaymentRequestDto request)
         {
             try
@@ -40,28 +40,38 @@ namespace ControllerLayer.Controllers
             }
         }
 
-    [Protected]
-    [HttpGet("vnpay-return")]
+        [Protected]
+        [HttpGet("vnpay-return")]
         public async Task<IActionResult> VnpayReturn()
         {
-            try
+            if (Request.QueryString.HasValue)
             {
-                // Lấy các tham số từ query string
-                var response = await _paymentService.CallBack(Request.Query);
-
-                // Kiểm tra kết quả và trả về phản hồi tương ứng
-                if (response != null && response.Success)
+                try
                 {
-                    return Ok(new { message = "Payment successful", data = response });
-                }
+                    // Lấy các tham số từ query string
+                    var response = await _paymentService.CallBack(Request.Query);
 
-                return BadRequest(new { message = "Payment failed", details = response?.VnPayResponseCode });
+                    if (response.Success)
+                    {
+                        return Ok(response);
+                    }
+
+                    return BadRequest(response);
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ex.Message);
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error during VNPAY callback: {ex.Message}");
-                return StatusCode(500, new { message = "Internal server error", details = ex.Message });
-            }
+            return NotFound("Không tìm thấy thông tin thanh toán");
+        }
+
+        [Protected]
+        [HttpGet("all")]
+        public async Task<ActionResult<List<PaymentListDto>>> GetAllPayments()
+        {
+            var payments = await _paymentService.GetAllPayments();
+            return Ok(payments);
         }
     }
 }

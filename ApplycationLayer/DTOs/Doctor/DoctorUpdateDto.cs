@@ -14,5 +14,9 @@ namespace ApplicationLayer.DTOs.Doctor
         public string? Metadata { get; set; } // Dữ liệu bổ sung
         public string? Specialize { get; set; } // Lĩnh vực chuyên môn
         public string? ProfileImg { get; set; } // Ảnh đại diện của bác sĩ
+        public int RatingAvg { get; set; }
+        public string? Degrees { get; set; }
+        public string Research { get; set; }
+        public string Languages { get; set; }
     }
 }

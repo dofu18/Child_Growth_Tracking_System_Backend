@@ -26,6 +26,7 @@ namespace ApplicationLayer.Service
     public interface IAuthService
     {
         public Task<GgAuthResp> HandleGoogleLogin(string redirect, string state, GgAuthInfo info);
+        public Task<IActionResult> HandleRegisterDoctor(RegisterReq req);
         public Task<IActionResult> HandleRegister(RegisterReq req);
         public Task<IActionResult> HandleLoginEmail(LoginReq req);
         public Task<IActionResult> HandleLoginGoogle(string redirect);
@@ -315,6 +316,34 @@ namespace ApplicationLayer.Service
             {
                 return ErrorResp.BadRequest("OTP is incorrect");
             }
+        }
+
+        public async Task<IActionResult> HandleRegisterDoctor(RegisterReq req)
+        {
+            var hashedPassword = _cryptoService.HashPassword(req.Password);
+
+            var user = await _userRepo.FirstOrDefaultAsync(x => x.Email.Equals(req.Email));
+
+            if (user != null)
+            {
+                return ErrorResp.BadRequest("Email is already taken");
+            }
+
+            var newUser = new User
+            {
+                Email = req.Email,
+                Name = req.Name,
+                Phone = req.Phone,
+                Password = hashedPassword,
+                Status = UserStatusEnum.Active,
+                AuthType = AuthTypeEnum.Email,
+                UserName = req.Email,
+                RoleId = Guid.Parse(GeneralConst.ROLE_DOCTOR_GUID)
+            };
+
+            var userAdded = await _userRepo.CreateAsync(newUser) ?? throw new Exception("Cannot create user");
+
+            return SuccessResp.Ok(_mapper.Map<UserDto>(userAdded));
         }
 
         //public async Task<IActionResult> HandleLoginFirebase(string token)

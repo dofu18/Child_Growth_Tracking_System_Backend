@@ -15,6 +15,7 @@ using ApplicationLayer.DTOs.User;
 using AutoMapper;
 using DomainLayer.Entities;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using ApplicationLayer.DTOs.Payment;
 
 namespace ApplicationLayer.Mapper
 {
@@ -48,10 +49,12 @@ namespace ApplicationLayer.Mapper
             CreateMap<Package, RenewPackageDto>().ReverseMap();
             CreateMap<Package, PackageUpdateDto>().ReverseMap();
             
-            
             //Transaction
             CreateMap<Transaction, PaymentResponseDto>();
             CreateMap<Transaction, TransactionDto>().ReverseMap();
+            CreateMap<Transaction, PaymentListDto>()
+                        .ForMember(dest => dest.PackageName, opt => opt.MapFrom(src => src.Package.PackageName)) // Lấy từ Transaction.Package.PackageName
+                        .ForMember(dest => dest.PaymentStatus, opt => opt.MapFrom(src => src.PaymentStatus.ToString())); // Enum phải chuyển về string
         }
     }
 }
