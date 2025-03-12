@@ -5,20 +5,8 @@ using AutoMapper;
 using DomainLayer.Entities;
 using InfrastructureLayer.Repository;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using System.Text;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.Extensions.Logging;
-using DomainLayer.Enum;
-using Org.BouncyCastle.Asn1.Ocsp;
 using static DomainLayer.Enum.GeneralEnum;
-using Microsoft.EntityFrameworkCore;
 
 
 
