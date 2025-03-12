@@ -90,5 +90,12 @@ namespace ControllerLayer.Controllers
             }
             return await _childrenService.SharingProfile(childId, recipientEmail);
         }
+
+        [Protected]
+        [HttpGet("shared")]
+        public async Task<IActionResult> GetSharedChildren()
+        {
+            return await _childrenService.GetSharedChildren();
+        }
     }
 }
