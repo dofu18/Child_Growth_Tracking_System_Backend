@@ -4,12 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ApplicationLayer.DTOs.Users
+namespace ApplicationLayer.DTOs.Feature
 {
-    public class UserQuery : PaginationReq
+    public class FeatureQuery : PaginationReq
     {
         public string? SearchKeyword { get; set; }
-        public List<Guid>? RoleIds { get; set; }
-
     }
 }

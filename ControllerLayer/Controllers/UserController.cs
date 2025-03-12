@@ -1,4 +1,4 @@
-﻿using ApplicationLayer.DTOs.User;
+﻿using ApplicationLayer.DTOs.Users;
 using ApplicationLayer.Middlewares;
 using ApplicationLayer.Service;
 using Microsoft.AspNetCore.Mvc;
