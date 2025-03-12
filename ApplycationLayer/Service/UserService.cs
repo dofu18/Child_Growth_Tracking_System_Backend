@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.ResponseCode;
-using ApplicationLayer.DTOs.User;
+using ApplicationLayer.DTOs.Users;
 using ApplicationLayer.Shared;
 using AutoMapper;
 using DomainLayer.Entities;

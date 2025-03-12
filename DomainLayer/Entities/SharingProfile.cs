@@ -14,8 +14,5 @@ namespace DomainLayer.Entities
         //Navigation Properties
         public User User { get; set; }
         public Children Children { get; set; }
-
-        public Guid DoctorId { get; set; }
-
     }
 }

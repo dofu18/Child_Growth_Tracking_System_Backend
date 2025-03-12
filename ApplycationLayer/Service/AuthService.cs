@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Application.ResponseCode;
 using ApplicationLayer.DTOs.Auth;
-using ApplicationLayer.DTOs.User;
+using ApplicationLayer.DTOs.Users;
 using AutoMapper;
 using DomainLayer.Constants;
 using DomainLayer.Entities;
@@ -26,6 +26,7 @@ namespace ApplicationLayer.Service
     public interface IAuthService
     {
         public Task<GgAuthResp> HandleGoogleLogin(string redirect, string state, GgAuthInfo info);
+        public Task<IActionResult> HandleRegisterDoctor(RegisterReq req);
         public Task<IActionResult> HandleRegister(RegisterReq req);
         public Task<IActionResult> HandleLoginEmail(LoginReq req);
         public Task<IActionResult> HandleLoginGoogle(string redirect);
@@ -94,6 +95,7 @@ namespace ApplicationLayer.Service
                     AuthType = AuthTypeEnum.Google,
                     UserName = info.Email,
                     RoleId = Guid.Parse(GeneralConst.ROLE_USER_GUID),
+                    LastLogin = DateTime.UtcNow
                 };
 
                 user = await _userRepo.CreateAsync(newUser);
@@ -256,8 +258,10 @@ namespace ApplicationLayer.Service
                 return ErrorResp.BadRequest("Refresh token is invalid");
             }
 
+            var role = _roleRepo.FoundOrThrowAsync(_userRepo.FoundOrThrowAsync(user.Id).Result.RoleId);
+
             var sessionId = Guid.NewGuid();
-            var accessTk = GenerateAccessTk(user.Id, user.Role.RoleName, sessionId, user.Email, user.Status);
+            var accessTk = GenerateAccessTk(user.Id, role.Result.RoleName, sessionId, user.Email, user.Status);
             var accessTkExpAt = DateTimeOffset.UtcNow.AddSeconds(JwtConst.ACCESS_TOKEN_EXP).ToUnixTimeSeconds();
 
             return SuccessResp.Ok(new RefreshResp
@@ -315,6 +319,34 @@ namespace ApplicationLayer.Service
             {
                 return ErrorResp.BadRequest("OTP is incorrect");
             }
+        }
+
+        public async Task<IActionResult> HandleRegisterDoctor(RegisterReq req)
+        {
+            var hashedPassword = _cryptoService.HashPassword(req.Password);
+
+            var user = await _userRepo.FirstOrDefaultAsync(x => x.Email.Equals(req.Email));
+
+            if (user != null)
+            {
+                return ErrorResp.BadRequest("Email is already taken");
+            }
+
+            var newUser = new User
+            {
+                Email = req.Email,
+                Name = req.Name,
+                Phone = req.Phone,
+                Password = hashedPassword,
+                Status = UserStatusEnum.Active,
+                AuthType = AuthTypeEnum.Email,
+                UserName = req.Email,
+                RoleId = Guid.Parse(GeneralConst.ROLE_DOCTOR_GUID)
+            };
+
+            var userAdded = await _userRepo.CreateAsync(newUser) ?? throw new Exception("Cannot create user");
+
+            return SuccessResp.Ok(_mapper.Map<UserDto>(userAdded));
         }
 
         //public async Task<IActionResult> HandleLoginFirebase(string token)
