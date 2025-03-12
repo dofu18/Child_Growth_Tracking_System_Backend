@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 public static class SuccessResp
 {
-  public static IActionResult Ok(string? message)
+  public static IActionResult Ok(string? message, DomainLayer.Entities.ConsultationResponse consultationResponse)
   {
     return new JsonResult(new { Message = message ?? RespMsg.OK, Code = RespCode.OK }) { StatusCode = RespCode.OK };
   }
@@ -15,7 +15,7 @@ public static class SuccessResp
     return new JsonResult(resp) { StatusCode = RespCode.OK };
   }
 
-  public static IActionResult Created(string? message)
+  public static IActionResult Created(string? message, DomainLayer.Entities.ConsultationRequest consultationRequest)
   {
     return new JsonResult(new { Message = message ?? RespMsg.CREATED, Code = RespCode.OK }) { StatusCode = RespCode.CREATED };
   }
