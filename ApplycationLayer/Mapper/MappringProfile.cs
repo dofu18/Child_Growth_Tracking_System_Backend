@@ -31,6 +31,7 @@ namespace ApplicationLayer.Mapper
             CreateMap<Children, ChildrenCreateDto>().ReverseMap();
             CreateMap<Children, ChildrentResponseDto>();
             CreateMap<Children, ChildrenUpdateDto>().ReverseMap();
+            CreateMap<Children, ChildrenDto>();
 
             //User
             CreateMap<User, UserDto>().ReverseMap();

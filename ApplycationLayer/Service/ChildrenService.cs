@@ -22,6 +22,7 @@ namespace ApplicationLayer.Service
         Task<IActionResult> Delete(Guid id);
         Task<IActionResult> HideChildren(Guid childId, bool isHidden);
         Task<IActionResult> SharingProfile(Guid childId, string recipientEmail);
+        Task<IActionResult> GetSharedChildren();
 
     }
     public class ChildrenService : BaseService, IChildrenService
@@ -288,6 +289,36 @@ namespace ApplicationLayer.Service
             await _sharingRepo.CreateAsync(shareProfile);
 
             return SuccessResp.Ok("Child's development information has been shared successfully.");
+        }
+
+        public async Task<IActionResult> GetSharedChildren()
+        {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+            var userId = payload.UserId;
+
+            // Lấy danh sách trẻ đã được chia sẻ cho userId
+            var sharedProfiles = await _sharingRepo.WhereAsync(
+                filter: s => s.UserId == userId,
+                navigationProperties: "Children"
+            );
+
+            var sharedChildren = sharedProfiles
+                .Where(s => s.Children != null) // Lọc ra các bản ghi có dữ liệu trẻ
+                .Select(s => s.Children)
+                .ToList();
+
+            if (!sharedChildren.Any())
+            {
+                return ErrorResp.NotFound("No shared children found.");
+            }
+
+            var childrenDto = _mapper.Map<List<ChildrenDto>>(sharedChildren);
+
+            return SuccessResp.Ok(childrenDto);
         }
 
     }
