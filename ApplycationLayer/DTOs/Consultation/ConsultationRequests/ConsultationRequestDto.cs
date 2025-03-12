@@ -11,6 +11,7 @@ namespace ApplicationLayer.DTOs.Consultation.ConsultationRequests
 {
     public class ConsultationRequestDto
     {
+        public Guid Id { get; set; }
         public Guid ChildrentId { get; set; }
         public DateTime RequestDate { get; set; }
         public string Title { get; set; }

@@ -17,6 +17,8 @@ using DomainLayer.Entities;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using ApplicationLayer.DTOs.Payment;
 using ApplicationLayer.DTOs.Feature;
+using ApplicationLayer.DTOs.Consultation.ConsultationRequests;
+using ApplicationLayer.DTOs.Consultation.ConsultationResponses;
 
 namespace ApplicationLayer.Mapper
 {
@@ -63,6 +65,12 @@ namespace ApplicationLayer.Mapper
             CreateMap<Feature, FeatureCreateDto>().ReverseMap();
             CreateMap<Feature, FeatureUpdateDto>().ReverseMap();
 
+            //Consultation Request
+            CreateMap<ConsultationRequest, ConsultationRequestDto>().ReverseMap();
+            CreateMap<ConsultationRequest, ConsultationRequestCreateDto>().ReverseMap();
+            //Response
+            CreateMap<ConsultationResponse, ConsultationResponseDto>().ReverseMap();
+            CreateMap<ConsultationResponse, ConsultationResponseCreateDto>().ReverseMap();
         }
     }
 }

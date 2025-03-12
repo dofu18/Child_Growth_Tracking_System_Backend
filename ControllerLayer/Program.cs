@@ -115,6 +115,9 @@ builder.Services.AddScoped<IUserPackageService, UserPackageService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IBmiService, BmiService>();
 builder.Services.AddScoped<IFeatureService, FeatureService>();
+builder.Services.AddScoped<IConsultationRequestService, ConsultationRequestService>();
+builder.Services.AddScoped<IConsultationResponseService, ConsultationResponseService>();
+
 
 var app = builder.Build();
 
