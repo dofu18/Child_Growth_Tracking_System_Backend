@@ -114,6 +114,12 @@ namespace ApplicationLayer.Service
 
         public async Task<PaymentResponseDto> CallBack(IQueryCollection queryParams)
         {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                throw new UnauthorizedAccessException("Invalid token");
+            }
+
             var vnpay = new VnPayLibrary();
             foreach (var (key, value) in queryParams)
             {
@@ -139,9 +145,31 @@ namespace ApplicationLayer.Service
 
             }
 
+            // Tìm giao dịch theo MerchantTransactionId
+            var transaction = await _transactionRepository.FirstOrDefaultAsync(t => t.MerchantTransactionId == vnp_merchantTransactionId.ToString());
+            if (transaction == null)
+            {
+                return new PaymentResponseDto { Success = false };
+            }
+
+            // Cập nhật trạng thái thanh toán
+            if (vnp_ResponseCode == "00") // "00" là mã giao dịch thành công
+            {
+                transaction.PaymentStatus = PaymentStatusEnum.Successfully;
+                transaction.PaymentDate = DateTime.UtcNow;
+            }
+            else
+            {
+                transaction.PaymentStatus = PaymentStatusEnum.Failed;
+            }
+
+            // Lưu thay đổi vào database
+            await _transactionRepository.UpdateAsync(transaction);
+
+
             return new PaymentResponseDto
             {
-                Success = true,
+                Success = transaction.PaymentStatus == PaymentStatusEnum.Successfully,
                 PaymentMethod = "VNPAY",
                 OrderDescription = vnp_OrderInfo,
                 OrderId = vnp_merchantTransactionId.ToString(),

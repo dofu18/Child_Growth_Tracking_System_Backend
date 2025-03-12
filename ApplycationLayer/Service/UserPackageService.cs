@@ -22,6 +22,7 @@ namespace ApplicationLayer.Service
         Task<IActionResult> CancelMembership();
         Task<IActionResult> UpdatePackage(Guid packageId, PackageUpdateDto dto);
         Task<IActionResult> DeletePackage(Guid packageId);
+        Task<IActionResult> GetAllPackages();
     }
     public class UserPackageService : BaseService, IUserPackageService
     {
@@ -76,8 +77,6 @@ namespace ApplicationLayer.Service
                 return ErrorResp.InternalServerError($"Exception: {ex.Message}");
             }
         }
-
-
 
         public async Task<IActionResult> RenewPackage(Guid packageId)
         {
@@ -216,5 +215,28 @@ namespace ApplicationLayer.Service
 
             return SuccessResp.Ok("Package has been deleted");
         }
+
+        public async Task<IActionResult> GetAllPackages()
+        {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+
+            try
+            {
+                var packages = await _packageRepo.ListAsync();
+
+                var result = _mapper.Map<List<PackageDto>>(packages);
+
+                return SuccessResp.Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return ErrorResp.InternalServerError(ex.Message);
+            }
+        }
+
     }
 }
