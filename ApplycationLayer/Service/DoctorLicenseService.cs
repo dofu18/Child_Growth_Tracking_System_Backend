@@ -237,19 +237,19 @@ namespace ApplicationLayer.Service
             }
 
             // Kiểm tra xem đã tồn tại bản ghi chia sẻ chưa
-            var existingShare = await _sharingRepo.WhereAsync(s => s.UserId == receiverId && s.DoctorId == doctorId);
+            //var existingShare = await _sharingRepo.WhereAsync(s => s.UserId == receiverId && s.DoctorId == doctorId);
 
-            if (existingShare.Any())
-            {
-                return ErrorResp.BadRequest("This doctor’s profile has already been shared with the recipient.");
-            }
+            //if (existingShare.Any())
+            //{
+            //    return ErrorResp.BadRequest("This doctor’s profile has already been shared with the recipient.");
+            //}
 
             // Tạo bản ghi mới trong bảng SharingProfiles
             var shareProfile = new SharingProfile
             {
                 Id = Guid.NewGuid(),
                 UserId = receiverId,
-                DoctorId = doctorId, // Tạo cột riêng cho DoctorId trong SharingProfile nếu cần
+                //DoctorId = doctorId, // Tạo cột riêng cho DoctorId trong SharingProfile nếu cần
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
