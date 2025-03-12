@@ -114,6 +114,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserPackageService, UserPackageService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IBmiService, BmiService>();
+builder.Services.AddScoped<IFeatureService, FeatureService>();
 
 var app = builder.Build();
 
