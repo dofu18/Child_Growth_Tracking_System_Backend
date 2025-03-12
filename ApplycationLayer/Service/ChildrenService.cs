@@ -21,7 +21,8 @@ namespace ApplicationLayer.Service
         Task<IActionResult> GetChildByToken();
         Task<IActionResult> Delete(Guid id);
         Task<IActionResult> HideChildren(Guid childId, bool isHidden);
-        Task<IActionResult> SharingProfile(Guid childId, Guid receiverId);
+        Task<IActionResult> SharingProfile(Guid childId, string recipientEmail);
+        Task<IActionResult> GetSharedChildren();
 
     }
     public class ChildrenService : BaseService, IChildrenService
@@ -53,6 +54,11 @@ namespace ApplicationLayer.Service
             if (dto == null)
             {
                 return ErrorResp.BadRequest("Dữ liệu không hợp lệ.");
+            }
+
+            if (dto.DoB >= DateOnly.FromDateTime(DateTime.UtcNow))
+            {
+                return ErrorResp.BadRequest("Date of birth must be in the past.");
             }
 
             var child = _mapper.Map<Children>(dto);
@@ -248,14 +254,13 @@ namespace ApplicationLayer.Service
             return SuccessResp.Ok(isHidden ? "Child information is now hidden." : "Child information is now visible.");
         }
 
-        public async Task<IActionResult> SharingProfile(Guid childId, Guid receiverId)
+        public async Task<IActionResult> SharingProfile(Guid childId, string recipientEmail)
         {
             var payload = ExtractPayload();
             if (payload == null)
             {
                 return ErrorResp.Unauthorized("Invalid token");
             }
-            var userId = payload.UserId;
 
             // Kiểm tra trẻ có tồn tại không
             var child = await _childrenRepo.FindByIdAsync(childId);
@@ -264,31 +269,18 @@ namespace ApplicationLayer.Service
                 return ErrorResp.NotFound("Child not found.");
             }
 
-            if (child.ParentId != userId)
-            {
-                return ErrorResp.Forbidden("You do not have permission to share this child's information.");
-            }
-
             // Kiểm tra người nhận có tồn tại không
-            var receiver = await _userRepo.FindByIdAsync(receiverId);
+            var receiver = await _userRepo.FirstOrDefaultAsync(u => u.Email == recipientEmail);
             if (receiver == null)
             {
                 return ErrorResp.NotFound("Recipient not found.");
-            }
-
-            // Kiểm tra xem đã tồn tại bản ghi chia sẻ chưa
-            var existingShare = await _sharingRepo.WhereAsync(s => s.UserId == receiverId && s.ChildrentId == childId);
-
-            if (existingShare.Any())
-            {
-                return ErrorResp.BadRequest("This child’s information has already been shared with the recipient.");
             }
 
             // Tạo bản ghi mới trong bảng SharingProfiles
             var shareProfile = new SharingProfile
             {
                 Id = Guid.NewGuid(),
-                UserId = receiverId,
+                UserId = receiver.Id,
                 ChildrentId = childId,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -297,6 +289,36 @@ namespace ApplicationLayer.Service
             await _sharingRepo.CreateAsync(shareProfile);
 
             return SuccessResp.Ok("Child's development information has been shared successfully.");
+        }
+
+        public async Task<IActionResult> GetSharedChildren()
+        {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+            var userId = payload.UserId;
+
+            // Lấy danh sách trẻ đã được chia sẻ cho userId
+            var sharedProfiles = await _sharingRepo.WhereAsync(
+                filter: s => s.UserId == userId,
+                navigationProperties: "Children"
+            );
+
+            var sharedChildren = sharedProfiles
+                .Where(s => s.Children != null) // Lọc ra các bản ghi có dữ liệu trẻ
+                .Select(s => s.Children)
+                .ToList();
+
+            if (!sharedChildren.Any())
+            {
+                return ErrorResp.NotFound("No shared children found.");
+            }
+
+            var childrenDto = _mapper.Map<List<ChildrenDto>>(sharedChildren);
+
+            return SuccessResp.Ok(childrenDto);
         }
 
     }

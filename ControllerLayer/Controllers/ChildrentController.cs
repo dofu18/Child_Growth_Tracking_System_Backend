@@ -81,10 +81,21 @@ namespace ControllerLayer.Controllers
         }
 
         [Protected]
-        [HttpPost("{childId}/share/{receiverId}")]
-        public async Task<IActionResult> ShareProfile([FromRoute] Guid childId, [FromRoute] Guid receiverId)
+        [HttpPost("{childId}/share")]
+        public async Task<IActionResult> ShareProfile([FromRoute] Guid childId, [FromQuery] string recipientEmail)
         {
-            return await _childrenService.SharingProfile(childId, receiverId);
+            if (string.IsNullOrWhiteSpace(recipientEmail))
+            {
+                return BadRequest("Recipient email is required.");
+            }
+            return await _childrenService.SharingProfile(childId, recipientEmail);
+        }
+
+        [Protected]
+        [HttpGet("shared")]
+        public async Task<IActionResult> GetSharedChildren()
+        {
+            return await _childrenService.GetSharedChildren();
         }
     }
 }
