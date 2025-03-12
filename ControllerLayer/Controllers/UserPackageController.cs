@@ -36,7 +36,7 @@ namespace ControllerLayer.Controllers
         }
 
         [Protected]
-        [HttpPut("edit/{packageId}")]
+        [HttpPut("edit")]
         public async Task<IActionResult> UpdatePackage(Guid packageId, [FromBody] PackageUpdateDto dto)
         {
             _logger.LogInformation($"Admin updating package {packageId}");
@@ -45,12 +45,21 @@ namespace ControllerLayer.Controllers
         }
 
         [Protected]
-        [HttpDelete("delete/{packageId}")]
+        [HttpDelete("delete")]
         public async Task<IActionResult> DeletePackage(Guid packageId)
         {
             _logger.LogInformation($"Admin deleting package {packageId}");
 
             return await _userPackageService.DeletePackage(packageId);
         }
+
+        [Protected]
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllPackages()
+        {
+            _logger.LogInformation("Fetching all packages");
+            return await _userPackageService.GetAllPackages();
+        }
+
     }
 }

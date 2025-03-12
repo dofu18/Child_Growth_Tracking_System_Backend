@@ -11,11 +11,12 @@ using ApplicationLayer.DTOs.Doctor;
 using ApplicationLayer.DTOs.Payments;
 using ApplicationLayer.DTOs.RatingFeedback;
 using ApplicationLayer.DTOs.Transaction;
-using ApplicationLayer.DTOs.User;
+using ApplicationLayer.DTOs.Users;
 using AutoMapper;
 using DomainLayer.Entities;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using ApplicationLayer.DTOs.Payment;
+using ApplicationLayer.DTOs.Feature;
 
 namespace ApplicationLayer.Mapper
 {
@@ -48,13 +49,20 @@ namespace ApplicationLayer.Mapper
             CreateMap<Package, PackageCreateDto>().ReverseMap();
             CreateMap<Package, RenewPackageDto>().ReverseMap();
             CreateMap<Package, PackageUpdateDto>().ReverseMap();
-            
+            CreateMap<Package, PackageDto>();
+
             //Transaction
             CreateMap<Transaction, PaymentResponseDto>();
             CreateMap<Transaction, TransactionDto>().ReverseMap();
             CreateMap<Transaction, PaymentListDto>()
                         .ForMember(dest => dest.PackageName, opt => opt.MapFrom(src => src.Package.PackageName)) // Lấy từ Transaction.Package.PackageName
                         .ForMember(dest => dest.PaymentStatus, opt => opt.MapFrom(src => src.PaymentStatus.ToString())); // Enum phải chuyển về string
+
+            //Feature
+            CreateMap<Feature, FeatureDto>().ReverseMap();
+            CreateMap<Feature, FeatureCreateDto>().ReverseMap();
+            CreateMap<Feature, FeatureUpdateDto>().ReverseMap();
+
         }
     }
 }
