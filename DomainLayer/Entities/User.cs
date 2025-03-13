@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,6 +20,7 @@ namespace DomainLayer.Entities
         public string Address { get; set; }
         public UserStatusEnum? Status { get; set; }
         public AuthTypeEnum? AuthType { get; set; }
+        public bool IsTrial { get; set; }
         public string Avatar {  get; set; }
 
         //Navigation Properties

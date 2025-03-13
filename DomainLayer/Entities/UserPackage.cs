@@ -12,11 +12,11 @@ namespace DomainLayer.Entities
     {
         public Guid PackageId { get; set; }
         public Guid OwnerId { get; set; }
+        public decimal PriceAtSubscription { get; set; }
         public DateOnly StartDate { get; set; }
         public DateOnly ExpireDate { get; set; }
         public UserPackageStatusEnum? Status { get; set; }
         //Navigation Properties
-        //public User CreatedUser { get; set; }
         public Package Package { get; set; }
         public User Owner { get; set; }
     }

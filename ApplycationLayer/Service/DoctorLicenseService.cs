@@ -34,14 +34,12 @@ namespace ApplicationLayer.Service
     {
         private readonly IGenericRepository<DoctorLicense> _licenseRepo;
         private readonly IGenericRepository<User> _userRepo;
-        private readonly IGenericRepository<DoctorSpecialization> _specializationRepo;
         private readonly IGenericRepository<SharingProfile> _sharingRepo;
 
-        public DoctorLicenseService(IGenericRepository<DoctorLicense> licenseRepo, IGenericRepository<User> userRepo, IGenericRepository<DoctorSpecialization> specializationRepo,IGenericRepository<SharingProfile> sharingRepo, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
+        public DoctorLicenseService(IGenericRepository<DoctorLicense> licenseRepo, IGenericRepository<User> userRepo, IGenericRepository<SharingProfile> sharingRepo, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
         {
             _licenseRepo = licenseRepo;
             _userRepo = userRepo;
-            _specializationRepo = specializationRepo;
             _sharingRepo = sharingRepo;
         }
 
