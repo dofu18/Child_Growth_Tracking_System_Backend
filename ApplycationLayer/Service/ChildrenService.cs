@@ -23,6 +23,8 @@ namespace ApplicationLayer.Service
         Task<IActionResult> HideChildren(Guid childId, bool isHidden);
         Task<IActionResult> SharingProfile(Guid childId, string recipientEmail);
         Task<IActionResult> GetSharedChildren();
+        Task<IActionResult> GetMyHideChildren();
+        Task<IActionResult> UnHideChild(Guid childId);
 
     }
     public class ChildrenService : BaseService, IChildrenService
@@ -247,7 +249,7 @@ namespace ApplicationLayer.Service
                 return ErrorResp.Forbidden("You do not have permission to hide this child's information.");
             }
 
-            child.Status = isHidden ? ChildrentStatusEnum.Disable : ChildrentStatusEnum.Active;
+            child.Status = isHidden ? ChildrentStatusEnum.Archived : ChildrentStatusEnum.Active;
 
             await _childrenRepo.UpdateAsync(child);
 
@@ -321,5 +323,46 @@ namespace ApplicationLayer.Service
             return SuccessResp.Ok(childrenDto);
         }
 
+        public async Task<IActionResult> GetMyHideChildren()
+        {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+            var userId = payload.UserId;
+
+            var myChild = await _childrenRepo.WhereAsync(c => c.ParentId == userId && c.Status == ChildrentStatusEnum.Archived);
+
+            if (myChild.Count() == 0)
+            {
+                return ErrorResp.NotFound("Your Children Archived list is empty");
+            }
+
+            return SuccessResp.Ok(myChild);
+        }
+
+        public async Task<IActionResult> UnHideChild(Guid childId)
+        {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+            var userId = payload.UserId;
+
+            var myChild = await _childrenRepo.WhereAsync(c => c.ParentId == userId && c.Status == ChildrentStatusEnum.Archived && c.Id == childId);
+            if (myChild.Count() == 0)
+            {
+                return ErrorResp.NotFound("This child not found or child is not in Archived list");
+            }
+
+            var child = await _childrenRepo.FoundOrThrowAsync(childId);
+
+            child.Status = ChildrentStatusEnum.Active;
+            await _childrenRepo.UpdateAsync(child);
+
+            return SuccessResp.Ok("Un-archive child successfully");
+        }
     }
 }
