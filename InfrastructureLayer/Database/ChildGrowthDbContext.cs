@@ -20,15 +20,11 @@ namespace InfrastructureLayer.Database
         public DbSet<ConsultationRequest> ConsultationRequests { get; set; }
         public DbSet<ConsultationResponse> ConsultationResponses { get; set; }
         public DbSet<DoctorLicense> DoctorLicense { get; set; }
-        public DbSet<DoctorSpecialization> DoctorSpecialization { get; set; }
-        public DbSet<Feature> Features { get; set; }
         public DbSet<GrowthRecord> GrowthRecords { get; set; }
         public DbSet<Package> Packages { get; set; }
-        public DbSet<PackageFeature> PackageFeatures { get; set; }
         public DbSet<RatingFeedback> RatingFeedbacks { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<SharingProfile> SharingProfiles { get; set; }
-        public DbSet<Specialization> Specializations { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<UserPackage> UserPackages { get; set; }
@@ -175,22 +171,6 @@ namespace InfrastructureLayer.Database
                 e.Property(x => x.UpdatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             });
-            modelBuilder.Entity<DoctorSpecialization>(e =>
-            {
-                e.HasKey(x => x.Id);
-                e.HasOne(x => x.DoctorLicense).WithMany().HasForeignKey(x => x.DoctorLicenseId).OnDelete(DeleteBehavior.Cascade);
-                e.HasOne(x => x.Specialization).WithMany().HasForeignKey(x => x.SpecializtionId).OnDelete(DeleteBehavior.Cascade);
-            });
-            modelBuilder.Entity<Feature>(e =>
-            {
-                e.HasKey(x => x.Id);
-                e.Property(x => x.FeatureName).IsRequired().HasMaxLength(50);
-                e.Property(x => x.Description).IsRequired(false).HasMaxLength(300);
-                e.HasOne(x => x.CreatedUser).WithMany().HasForeignKey(x => x.CreatedBy).OnDelete(DeleteBehavior.Cascade);
-                e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
-                e.Property(x => x.UpdatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-            });
             modelBuilder.Entity<GrowthRecord>(e =>
             {
                 e.HasKey(x => x.Id);
@@ -211,20 +191,13 @@ namespace InfrastructureLayer.Database
                 e.Property(x => x.PackageName).IsRequired().HasMaxLength(100);
                 e.Property(x => x.Description).IsRequired(false).HasMaxLength(200);
                 e.Property(x => x.Price).IsRequired();
-                e.Property(x => x.DurationMonths).IsRequired();
-                e.Property(x => x.TrialPeriodDays).IsRequired();
+                e.Property(x => x.BillingCycle).HasConversion<string>().HasDefaultValue(BillingCycleEnum.Monthly);
                 e.Property(x => x.MaxChildrentAllowed).IsRequired();
                 e.Property(x => x.Status).HasConversion<string>().HasDefaultValue(PackageStatusEnum.Pending);
                 e.HasOne(x => x.CreatedUser).WithMany().HasForeignKey(x => x.CreatedBy).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
                 e.Property(x => x.UpdatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-            });
-            modelBuilder.Entity<PackageFeature>(e =>
-            {
-                e.HasKey(x => x.Id);
-                e.HasOne(x => x.Package).WithMany().HasForeignKey(x => x.PackageId).OnDelete(DeleteBehavior.Cascade);
-                e.HasOne(x => x.Feature).WithMany().HasForeignKey(x => x.FeatureId).OnDelete(DeleteBehavior.Cascade);
             });
             modelBuilder.Entity<RatingFeedback>(e =>
             {
@@ -278,15 +251,6 @@ namespace InfrastructureLayer.Database
                 e.HasOne(x => x.Children).WithMany().HasForeignKey(x => x.ChildrentId).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
-            modelBuilder.Entity<Specialization>(e =>
-            {
-                e.HasKey(x => x.Id);
-                e.Property(x => x.Name).IsRequired().HasMaxLength(50);
-                e.Property(x => x.Description).IsRequired(false).HasMaxLength(200);
-                e.HasOne(x => x.CreatedUser).WithMany().HasForeignKey(x => x.CreatedBy).OnDelete(DeleteBehavior.Cascade);
-                e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
-                e.Property(x => x.UpdatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
-            });
             modelBuilder.Entity<Transaction>(e =>
             {
                 e.HasKey(x => x.Id);
@@ -316,6 +280,7 @@ namespace InfrastructureLayer.Database
                 e.Property(x => x.Avatar).IsRequired(false).HasMaxLength(1000);
                 e.Property(x => x.Status).HasConversion<string>().HasDefaultValue(UserStatusEnum.NotVerified);
                 e.Property(x => x.AuthType).HasConversion<string>().HasDefaultValue(AuthTypeEnum.Email);
+                e.Property(x => x.IsTrial).IsRequired().HasDefaultValue(false);
                 e.HasOne(x => x.Role).WithMany().HasForeignKey(x => x.RoleId).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
@@ -324,6 +289,7 @@ namespace InfrastructureLayer.Database
                 e.HasKey(x => x.Id);
                 e.HasOne(x => x.Owner).WithMany().HasForeignKey(x => x.OwnerId).OnDelete(DeleteBehavior.Cascade);
                 e.HasOne(x => x.Package).WithMany().HasForeignKey(x => x.PackageId).OnDelete(DeleteBehavior.Cascade);
+                e.Property(x => x.PriceAtSubscription).IsRequired();
                 e.Property(x => x.Status).HasConversion<string>().HasDefaultValue(UserPackageStatusEnum.OnGoing);
                 e.Property(x => x.StartDate).IsRequired().HasDefaultValueSql("CURRENT_DATE");
                 e.Property(x => x.ExpireDate).IsRequired().HasDefaultValueSql("CURRENT_DATE");

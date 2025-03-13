@@ -3,6 +3,7 @@ using System;
 using InfrastructureLayer.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace InfrastructureLayer.Migrations
 {
     [DbContext(typeof(ChildGrowthDbContext))]
-    partial class ChildGrowthDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250313144439_DeleteSpec")]
+    partial class DeleteSpec
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -386,6 +389,41 @@ namespace InfrastructureLayer.Migrations
                     b.ToTable("DoctorLicense");
                 });
 
+            modelBuilder.Entity("DomainLayer.Entities.Feature", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("FeatureName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.ToTable("Features");
+                });
+
             modelBuilder.Entity("DomainLayer.Entities.GrowthRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -440,12 +478,6 @@ namespace InfrastructureLayer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("BillingCycle")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("Monthly");
-
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -457,6 +489,9 @@ namespace InfrastructureLayer.Migrations
                     b.Property<string>("Description")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<int>("DurationMonths")
+                        .HasColumnType("integer");
 
                     b.Property<int>("MaxChildrentAllowed")
                         .HasColumnType("integer");
@@ -474,6 +509,9 @@ namespace InfrastructureLayer.Migrations
                         .HasColumnType("text")
                         .HasDefaultValue("Pending");
 
+                    b.Property<int>("TrialPeriodDays")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -484,6 +522,33 @@ namespace InfrastructureLayer.Migrations
                     b.HasIndex("CreatedBy");
 
                     b.ToTable("Packages");
+                });
+
+            modelBuilder.Entity("DomainLayer.Entities.PackageFeature", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("FeatureId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PackageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FeatureId");
+
+                    b.HasIndex("PackageId");
+
+                    b.ToTable("PackageFeatures");
                 });
 
             modelBuilder.Entity("DomainLayer.Entities.RatingFeedback", b =>
@@ -722,11 +787,6 @@ namespace InfrastructureLayer.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<bool>("IsTrial")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
                     b.Property<DateTime>("LastLogin")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -790,9 +850,6 @@ namespace InfrastructureLayer.Migrations
 
                     b.Property<Guid>("PackageId")
                         .HasColumnType("uuid");
-
-                    b.Property<decimal>("PriceAtSubscription")
-                        .HasColumnType("numeric");
 
                     b.Property<DateOnly>("StartDate")
                         .ValueGeneratedOnAdd()
@@ -911,6 +968,17 @@ namespace InfrastructureLayer.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("DomainLayer.Entities.Feature", b =>
+                {
+                    b.HasOne("DomainLayer.Entities.User", "CreatedUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedUser");
+                });
+
             modelBuilder.Entity("DomainLayer.Entities.GrowthRecord", b =>
                 {
                     b.HasOne("DomainLayer.Entities.Children", "Children")
@@ -939,6 +1007,25 @@ namespace InfrastructureLayer.Migrations
                         .IsRequired();
 
                     b.Navigation("CreatedUser");
+                });
+
+            modelBuilder.Entity("DomainLayer.Entities.PackageFeature", b =>
+                {
+                    b.HasOne("DomainLayer.Entities.Feature", "Feature")
+                        .WithMany()
+                        .HasForeignKey("FeatureId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DomainLayer.Entities.Package", "Package")
+                        .WithMany()
+                        .HasForeignKey("PackageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Feature");
+
+                    b.Navigation("Package");
                 });
 
             modelBuilder.Entity("DomainLayer.Entities.RatingFeedback", b =>
