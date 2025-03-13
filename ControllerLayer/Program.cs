@@ -117,6 +117,7 @@ builder.Services.AddScoped<IBmiService, BmiService>();
 //builder.Services.AddScoped<IFeatureService, FeatureService>();
 builder.Services.AddScoped<IConsultationRequestService, ConsultationRequestService>();
 builder.Services.AddScoped<IConsultationResponseService, ConsultationResponseService>();
+builder.Services.AddScoped<IGrowthTrackingService, GrowthTrackingService>();
 
 
 var app = builder.Build();

@@ -11,11 +11,13 @@ namespace ControllerLayer.Controllers
     public class BmiController : ControllerBase
     {
         private readonly IBmiService _bmiService;
+        private readonly IGrowthTrackingService _growthTrackingService;
         private readonly ILogger<BmiController> _logger;
 
-        public BmiController(IBmiService bmiService, ILogger<BmiController> logger)
+        public BmiController(IBmiService bmiService, IGrowthTrackingService growthTrackingService, ILogger<BmiController> logger)
         {
             _bmiService = bmiService;
+            _growthTrackingService = growthTrackingService;
             _logger = logger;
         }
 
@@ -31,6 +33,14 @@ namespace ControllerLayer.Controllers
         public async Task<IActionResult> SaveGrowthRecord([FromBody] SaveGrowthRecordRequestDto request)
         {
             var result = await _bmiService.SaveGrowthRecordAsync(request);
+            return Ok(result);
+        }
+
+        [Protected]
+        [HttpGet("tracking")]
+        public async Task<IActionResult> GrowthTracking([FromQuery] Guid childId)
+        {
+            var result = await _growthTrackingService.GetGrowthTracking(childId);
             return Ok(result);
         }
     }
