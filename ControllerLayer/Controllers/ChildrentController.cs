@@ -97,5 +97,19 @@ namespace ControllerLayer.Controllers
         {
             return await _childrenService.GetSharedChildren();
         }
+
+        [Protected]
+        [HttpGet("archive-list")]
+        public async Task<IActionResult> GetArchiveList()
+        {
+            return await _childrenService.GetMyHideChildren();
+        }
+
+        [Protected]
+        [HttpPatch("unarchive")]
+        public async Task<IActionResult> UnArchive(Guid childId)
+        {
+            return await _childrenService.UnHideChild(childId);
+        }
     }
 }
