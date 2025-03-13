@@ -74,7 +74,7 @@ namespace ControllerLayer.Controllers
         }
 
         [Protected]
-        [HttpPost("/hideChildren/{id}")]
+        [HttpPost("hideChildren/{id}")]
         public async Task<IActionResult> HideChildren(Guid id, [FromBody] bool isHidden)
         {
             return await _childrenService.HideChildren(id, isHidden);
