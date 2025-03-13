@@ -17,33 +17,37 @@ namespace ApplicationLayer.Service
 {
     public interface IUserPackageService
     {
-        Task<IActionResult> CreatePackage(PackageCreateDto dto, Guid userId);
-        Task<IActionResult> RenewPackage(Guid userId, Guid packageId);
+        Task<IActionResult> CreatePackage(PackageCreateDto dto);
+        Task<IActionResult> RenewPackage(Guid packageId);
+        Task<IActionResult> CancelMembership();
         Task<IActionResult> UpdatePackage(Guid packageId, PackageUpdateDto dto);
         Task<IActionResult> DeletePackage(Guid packageId);
-        Task<IActionResult> ProcessPayment(Guid userId, Guid packageId, string paymentMethod, decimal money);
-        Task<IActionResult> VnPayReturn(string vnp_ResponseCode, Guid transactionId);
+        Task<IActionResult> GetAllPackages();
     }
-
     public class UserPackageService : BaseService, IUserPackageService
     {
         private readonly IGenericRepository<UserPackage> _userPackageRepo;
         private readonly IGenericRepository<Package> _packageRepo;
         private readonly IGenericRepository<Transaction> _transactionRepo;
-        private readonly IVNPAYService _vnPayService;
         private readonly IConfiguration _configuration;
 
-        public UserPackageService(IGenericRepository<UserPackage> userPackageRepo, IGenericRepository<Package> packageRepo, IGenericRepository<Transaction> transactionRepo, IVNPAYService vnPayService, IConfiguration configuration, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
+        public UserPackageService(IGenericRepository<UserPackage> userPackageRepo, IGenericRepository<Package> packageRepo, IGenericRepository<Transaction> transactionRepo, IConfiguration configuration, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
         {
             _userPackageRepo = userPackageRepo;
             _packageRepo = packageRepo;
             _transactionRepo = transactionRepo;
-            _vnPayService = vnPayService;
             _configuration = configuration;
         }
 
-        public async Task<IActionResult> CreatePackage(PackageCreateDto dto, Guid userId)
+        public async Task<IActionResult> CreatePackage(PackageCreateDto dto)
         {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+            var userId = payload.UserId;
+
             try
             {
                 var package = new Package
@@ -52,8 +56,9 @@ namespace ApplicationLayer.Service
                     PackageName = dto.PackageName,
                     Description = dto.Description,
                     Price = dto.Price,
-                    DurationMonths = dto.DurationMonths,
-                    TrialPeriodDays = dto.TrialPeriodDays,
+                    BillingCycle = dto.BillingCycle,
+                    //DurationMonths = dto.DurationMonths,
+                    //TrialPeriodDays = dto.TrialPeriodDays,
                     MaxChildrentAllowed = dto.MaxChildrentAllowed,
                     CreatedBy = userId,
                     Status = PackageStatusEnum.Published,
@@ -74,29 +79,54 @@ namespace ApplicationLayer.Service
             }
         }
 
-
-
-        public async Task<IActionResult> RenewPackage(Guid userId, Guid packageId)
+        public async Task<IActionResult> RenewPackage(Guid packageId)
         {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+
             try
             {
-                //Kiểm tra package có tồn tại không
+                var userId = payload.UserId;
+
+                // Kiểm tra package có tồn tại không
                 var package = await _packageRepo.FindByIdAsync(packageId);
                 if (package == null)
                 {
-                    return ErrorResp.NotFound("Children not found");
+                    return ErrorResp.NotFound("Package not found");
                 }
 
                 //Kiểm tra user đã có gói đang hoạt động chưa
-                var currentPackage = await _userPackageRepo.FindByIdAsync(userId);
-                if (currentPackage == null)
+                var currentPackage = await _userPackageRepo
+                                .WhereAsync(up => up.OwnerId == userId && up.Status == UserPackageStatusEnum.OnGoing);
+                if (!currentPackage.Any())
                 {
                     return ErrorResp.BadRequest("No active package found for renewal.");
                 }
 
-                //Cập nhật ngày hết hạn của gói hiện tại
-                currentPackage.ExpireDate = currentPackage.ExpireDate.AddMonths(package.DurationMonths);
-                await _userPackageRepo.UpdateAsync(currentPackage);
+                // Lấy phần tử đầu tiên của danh sách
+                var activePackage = currentPackage.FirstOrDefault();
+                if (activePackage == null)
+                {
+                    return ErrorResp.BadRequest("No active package found.");
+                }
+
+                // Lấy ngày hiện tại dưới dạng DateOnly
+                DateOnly currentDate = DateOnly.FromDateTime(DateTime.UtcNow);
+
+                // Nếu gói vẫn còn hạn
+                if (activePackage.ExpireDate > currentDate)
+                {
+                    return ErrorResp.BadRequest("Your package is still active, renewal is not necessary.");
+                }
+
+                // Nếu gói đã hết hạn
+                //activePackage.ExpireDate = currentDate.AddMonths(package.DurationMonths);
+
+                // Cập nhật vào database
+                await _userPackageRepo.UpdateAsync(activePackage);
 
                 //Tạo transaction cho lần gia hạn
                 var transaction = new Transaction
@@ -110,7 +140,9 @@ namespace ApplicationLayer.Service
                     PaymentMethod = "CreditCard",
                     TransactionDate = DateTime.UtcNow,
                     PaymentStatus = GeneralEnum.PaymentStatusEnum.Successfully,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    MerchantTransactionId = Guid.NewGuid().ToString(),
+                    Description = "Renewal payment for package"
                 };
 
                 await _transactionRepo.CreateAsync(transaction);
@@ -120,16 +152,24 @@ namespace ApplicationLayer.Service
             }
             catch (Exception ex)
             {
-                return ErrorResp.InternalServerError(ex.Message);
+                return ErrorResp.InternalServerError($"Exception: {ex.Message} | Inner: {ex.InnerException?.Message}");
             }
         }
 
-        public async Task<IActionResult> CancelMembership(CancelPackageDto dto)
+        public async Task<IActionResult> CancelMembership()
         {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+
             try
             {
+                var userId = payload.UserId;
+
                 // Tìm gói thành viên hiện tại của người dùng
-                var userPackage = await _userPackageRepo.WhereAsync(up => up.OwnerId == dto.UserId && up.ExpireDate > DateOnly.FromDateTime(DateTime.Now));
+                var userPackage = await _userPackageRepo.WhereAsync(up => up.OwnerId == userId && up.ExpireDate > DateOnly.FromDateTime(DateTime.Now));
 
                 if (!userPackage.Any())
                 {
@@ -154,6 +194,12 @@ namespace ApplicationLayer.Service
 
         public async Task<IActionResult> UpdatePackage(Guid packageId, PackageUpdateDto dto)
         {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+
             var package = await _packageRepo.FindByIdAsync(packageId);
 
             if (package == null)
@@ -171,6 +217,12 @@ namespace ApplicationLayer.Service
 
         public async Task<IActionResult> DeletePackage(Guid packageId)
         {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+
             var package = await _packageRepo.FindByIdAsync(packageId);
 
             if (package == null)
@@ -186,97 +238,27 @@ namespace ApplicationLayer.Service
             return SuccessResp.Ok("Package has been deleted");
         }
 
-        public async Task<IActionResult> ProcessPayment(Guid userId, Guid packageId, string paymentMethod, decimal money)
+        public async Task<IActionResult> GetAllPackages()
         {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+
             try
             {
-                var package = await _packageRepo.FindByIdAsync(packageId);
+                var packages = await _packageRepo.ListAsync();
 
-                if (package == null)
-                {
-                    return ErrorResp.NotFound("Package not found");
-                }
+                var result = _mapper.Map<List<PackageDto>>(packages);
 
-                var merchantTransactionId = Guid.NewGuid().ToString();
-
-                var transaction = new Transaction
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = userId,
-                    PackageId = packageId,
-                    Amount = money,
-                    Currency = "USD",
-                    TransactionType = "Membership",
-                    PaymentMethod = paymentMethod,
-                    TransactionDate = DateTime.UtcNow,
-                    PaymentStatus = PaymentStatusEnum.Pending,
-                    MerchantTransactionId = merchantTransactionId,
-                    Description = $"Payment for package {packageId} by user {userId}"
-
-                };
-
-                await _transactionRepo.CreateAsync(transaction);
-
-                // Tạo URL thanh toán VNPAY
-                var returnUrl = _configuration["Vnpay:ReturnUrl"] + "?transactionId=" + transaction.Id; // URL callback
-                var paymentUrl = _vnPayService.CreatePaymentUrl(userId, packageId, money, returnUrl);
-
-                var response = new PaymentResponseDto
-                {
-                    Message = "Payment URL created",
-                    PaymentUrl = paymentUrl
-                };
-                return SuccessResp.Ok(response);
-
+                return SuccessResp.Ok(result);
             }
             catch (Exception ex)
             {
-                return ErrorResp.InternalServerError($"Exception: {ex.InnerException?.Message ?? ex.Message}");
+                return ErrorResp.InternalServerError(ex.Message);
             }
         }
 
-        public async Task<IActionResult> VnPayReturn(string vnp_ResponseCode, Guid transactionId)
-        {
-            try
-            {
-                var transaction = await _transactionRepo.FindByIdAsync(transactionId);
-                if (transaction == null)
-                {
-                    return ErrorResp.NotFound("Transaction not found");
-                }
-
-                if (vnp_ResponseCode == "00") // 00 là mã thành công của VNPAY
-                {
-                    transaction.PaymentStatus = PaymentStatusEnum.Successfully;
-                    transaction.PaymentDate = DateTime.UtcNow;
-
-                    var package = await _packageRepo.FindByIdAsync(transaction.PackageId);
-
-                    var userPackage = new UserPackage
-                    {
-                        OwnerId = transaction.UserId,
-                        PackageId = package.Id,
-                        StartDate = DateOnly.FromDateTime(DateTime.UtcNow),
-                        ExpireDate = DateOnly.FromDateTime(DateTime.UtcNow).AddMonths(package.DurationMonths),
-                        Status = UserPackageStatusEnum.OnGoing
-                    };
-
-                    await _userPackageRepo.CreateAsync(userPackage);
-                }
-                else
-                {
-                    // If payment failed
-                    transaction.PaymentStatus = PaymentStatusEnum.Failed;
-                }
-
-                await _transactionRepo.UpdateAsync(transaction);
-
-                return SuccessResp.Ok("Payment processed successfully");
-            }
-            catch (Exception ex)
-            {
-                return ErrorResp.InternalServerError($"Exception: {ex.Message}");
-            }
-        }
     }
 }

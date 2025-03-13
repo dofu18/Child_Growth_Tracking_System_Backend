@@ -1,4 +1,5 @@
 using ApplicationLayer.Service;
+using DomainLayer.Entities;
 using InfrastructureLayer.Core.Cache;
 using InfrastructureLayer.Core.Crypto;
 using InfrastructureLayer.Core.JWT;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
+using static ApplicationLayer.Service.IUserPackageService;
 
 var builder = WebApplication.CreateBuilder(args);
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -110,7 +112,12 @@ builder.Services.AddScoped<ITracsactionService, TransactionService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserPackageService, UserPackageService>();
-builder.Services.AddScoped<IVNPAYService, VNPayService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IBmiService, BmiService>();
+builder.Services.AddScoped<IConsultationRequestService, ConsultationRequestService>();
+builder.Services.AddScoped<IConsultationResponseService, ConsultationResponseService>();
+builder.Services.AddScoped<IGrowthTrackingService, GrowthTrackingService>();
+
 
 var app = builder.Build();
 

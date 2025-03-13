@@ -3,16 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ApplicationLayer.DTOs.Users;
 
-namespace DomainLayer.Entities
+namespace ApplicationLayer.DTOs.Feature
 {
-    public class Feature : BaseEntity
+    public class FeatureUpdateDto
     {
         public string FeatureName { get; set; }
         public string Description { get; set; }
-        public Guid CreatedBy { get; set; }
-        
-        //Navigation Properties
-        public User CreatedUser { get; set; }
     }
 }

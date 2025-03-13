@@ -5,21 +5,8 @@ using AutoMapper;
 using DomainLayer.Entities;
 using InfrastructureLayer.Repository;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using System.Text;
-using DomainLayer.Entities;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.Extensions.Logging;
-using DomainLayer.Enum;
-using Org.BouncyCastle.Asn1.Ocsp;
 using static DomainLayer.Enum.GeneralEnum;
-using Microsoft.EntityFrameworkCore;
 
 
 
@@ -31,9 +18,13 @@ namespace ApplicationLayer.Service
         Task<IActionResult> GetAll();
         Task<IActionResult> Update(Guid id, ChildrenUpdateDto dto);
         Task<IActionResult> GetChildByParent(Guid parentId);
+        Task<IActionResult> GetChildByToken();
         Task<IActionResult> Delete(Guid id);
         Task<IActionResult> HideChildren(Guid childId, bool isHidden);
-        Task<IActionResult> SharingProfile(Guid childId, Guid receiverId);
+        Task<IActionResult> SharingProfile(Guid childId, string recipientEmail);
+        Task<IActionResult> GetSharedChildren();
+        Task<IActionResult> GetMyHideChildren();
+        Task<IActionResult> UnHideChild(Guid childId);
 
     }
     public class ChildrenService : BaseService, IChildrenService
@@ -67,35 +58,57 @@ namespace ApplicationLayer.Service
                 return ErrorResp.BadRequest("Dữ liệu không hợp lệ.");
             }
 
-            if (dto.Height <= 0 || dto.Weight <= 0)
+            if (dto.DoB >= DateOnly.FromDateTime(DateTime.UtcNow))
             {
-                return ErrorResp.BadRequest("Chiều cao và cân nặng phải lớn hơn 0.");
+                return ErrorResp.BadRequest("Date of birth must be in the past.");
             }
 
             var child = _mapper.Map<Children>(dto);
 
-            child.Bmi = dto.Weight / ((dto.Height/100) * (dto.Height/100));
-
-            // Tìm danh mục BMI
-            var bmiCategory = await _bmiCategoryRepo.FirstOrDefaultAsync(c => child.Bmi >= c.BmiBottom && child.Bmi <= c.BmiTop);
-            if (bmiCategory == null)
+            if (dto.Height <= 0 || dto.Weight <= 0)
             {
-                throw new Exception("Không tìm thấy danh mục BMI phù hợp.");
+                child.Bmi = 0;
+                child.BmiPercentile = 0;
+
+                // Gán vào danh mục "No Information"
+                var noInfoCategory = await _bmiCategoryRepo.FirstOrDefaultAsync(c => c.Name == "No Information");
+                if (noInfoCategory != null)
+                {
+                    child.BmiCategoryId = noInfoCategory.Id;
+                }
+                else
+                {
+                    throw new Exception("Không tìm thấy danh mục BMI 'No Information'.");
+                }
             }
-
-            child.BmiCategoryId = bmiCategory.Id;
-
-            // Tính BMI Percentile
-            if (child.Bmi < 14.0m)
-                child.BmiPercentile = 5;
-            else if (child.Bmi < 15.8m)
-                child.BmiPercentile = 50;
-            else if (child.Bmi < 17.0m)
-                child.BmiPercentile = 85;
-            else if (child.Bmi < 18.0m)
-                child.BmiPercentile = 95;
             else
-                child.BmiPercentile = 100;
+            {
+                child.Bmi = dto.Weight / ((dto.Height / 100) * (dto.Height / 100));
+
+                // Tìm danh mục BMI
+                var bmiCategory = await _bmiCategoryRepo.FirstOrDefaultAsync(c => child.Bmi >= c.BmiBottom && child.Bmi <= c.BmiTop);
+                if (bmiCategory == null)
+                {
+                    var noInfoCategory = await _bmiCategoryRepo.FirstOrDefaultAsync(c => c.Name == "No Information");
+                    child.BmiCategoryId = noInfoCategory.Id;
+                }
+                else
+                {
+                    child.BmiCategoryId = bmiCategory.Id;
+                }
+
+                // Tính BMI Percentile
+                if (child.Bmi < 14.0m)
+                    child.BmiPercentile = 5;
+                else if (child.Bmi < 15.8m)
+                    child.BmiPercentile = 50;
+                else if (child.Bmi < 17.0m)
+                    child.BmiPercentile = 85;
+                else if (child.Bmi < 18.0m)
+                    child.BmiPercentile = 95;
+                else
+                    child.BmiPercentile = 100;
+            }
 
             child.ParentId = userId;
             child.Status = ChildrentStatusEnum.Active;
@@ -104,6 +117,7 @@ namespace ApplicationLayer.Service
             await _childrenRepo.CreateAsync(child);
             return SuccessResp.Created("Children information added successfully");
         }
+
 
         public async Task<IActionResult> GetAll()
         {
@@ -115,7 +129,7 @@ namespace ApplicationLayer.Service
 
             var userId = payload.UserId;
 
-            var children = await _childrenRepo.WhereAsync(c => c.ParentId == userId && c.Status == ChildrentStatusEnum.Active);
+            var children = await _childrenRepo.WhereAsync(c => c.Status == ChildrentStatusEnum.Active);
             var result = _mapper.Map<List<ChildrentResponseDto>>(children);
 
             return SuccessResp.Ok(result);
@@ -149,16 +163,36 @@ namespace ApplicationLayer.Service
             return SuccessResp.Ok("Children information updated successfully");
         }
 
-        public async Task<IActionResult> GetChildByParent(Guid parentId)
+        public async Task<IActionResult> GetChildByToken()
         {
             var payload = ExtractPayload();
             if (payload == null)
             {
                 return ErrorResp.Unauthorized("Invalid token");
             }
+
             var userId = payload.UserId;
 
             var chidren = await _childrenRepo.WhereAsync(c => c.ParentId == userId && c.Status == ChildrentStatusEnum.Active);
+
+            if (!chidren.Any())
+            {
+                return ErrorResp.NotFound("No children found for this parent");
+            }
+            var result = _mapper.Map<List<ChildrentResponseDto>>(chidren);
+
+            return SuccessResp.Ok(chidren);
+        }
+
+        public async Task<IActionResult> GetChildByParent(Guid parentid)
+        {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+
+            var chidren = await _childrenRepo.WhereAsync(c => c.ParentId == parentid && c.Status == ChildrentStatusEnum.Active);
 
             if (!chidren.Any())
             {
@@ -215,21 +249,20 @@ namespace ApplicationLayer.Service
                 return ErrorResp.Forbidden("You do not have permission to hide this child's information.");
             }
 
-            child.Status = isHidden ? ChildrentStatusEnum.Disable : ChildrentStatusEnum.Active;
+            child.Status = isHidden ? ChildrentStatusEnum.Archived : ChildrentStatusEnum.Active;
 
             await _childrenRepo.UpdateAsync(child);
 
             return SuccessResp.Ok(isHidden ? "Child information is now hidden." : "Child information is now visible.");
         }
 
-        public async Task<IActionResult> SharingProfile(Guid childId, Guid receiverId)
+        public async Task<IActionResult> SharingProfile(Guid childId, string recipientEmail)
         {
             var payload = ExtractPayload();
             if (payload == null)
             {
                 return ErrorResp.Unauthorized("Invalid token");
             }
-            var userId = payload.UserId;
 
             // Kiểm tra trẻ có tồn tại không
             var child = await _childrenRepo.FindByIdAsync(childId);
@@ -238,31 +271,18 @@ namespace ApplicationLayer.Service
                 return ErrorResp.NotFound("Child not found.");
             }
 
-            if (child.ParentId != userId)
-            {
-                return ErrorResp.Forbidden("You do not have permission to share this child's information.");
-            }
-
             // Kiểm tra người nhận có tồn tại không
-            var receiver = await _userRepo.FindByIdAsync(receiverId);
+            var receiver = await _userRepo.FirstOrDefaultAsync(u => u.Email == recipientEmail);
             if (receiver == null)
             {
                 return ErrorResp.NotFound("Recipient not found.");
-            }
-
-            // Kiểm tra xem đã tồn tại bản ghi chia sẻ chưa
-            var existingShare = await _sharingRepo.WhereAsync(s => s.UserId == receiverId && s.ChildrentId == childId);
-
-            if (existingShare.Any())
-            {
-                return ErrorResp.BadRequest("This child’s information has already been shared with the recipient.");
             }
 
             // Tạo bản ghi mới trong bảng SharingProfiles
             var shareProfile = new SharingProfile
             {
                 Id = Guid.NewGuid(),
-                UserId = receiverId,
+                UserId = receiver.Id,
                 ChildrentId = childId,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -273,5 +293,76 @@ namespace ApplicationLayer.Service
             return SuccessResp.Ok("Child's development information has been shared successfully.");
         }
 
+        public async Task<IActionResult> GetSharedChildren()
+        {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+            var userId = payload.UserId;
+
+            // Lấy danh sách trẻ đã được chia sẻ cho userId
+            var sharedProfiles = await _sharingRepo.WhereAsync(
+                filter: s => s.UserId == userId,
+                navigationProperties: "Children"
+            );
+
+            var sharedChildren = sharedProfiles
+                .Where(s => s.Children != null) // Lọc ra các bản ghi có dữ liệu trẻ
+                .Select(s => s.Children)
+                .ToList();
+
+            if (!sharedChildren.Any())
+            {
+                return ErrorResp.NotFound("No shared children found.");
+            }
+
+            var childrenDto = _mapper.Map<List<ChildrenDto>>(sharedChildren);
+
+            return SuccessResp.Ok(childrenDto);
+        }
+
+        public async Task<IActionResult> GetMyHideChildren()
+        {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+            var userId = payload.UserId;
+
+            var myChild = await _childrenRepo.WhereAsync(c => c.ParentId == userId && c.Status == ChildrentStatusEnum.Archived);
+
+            if (myChild.Count() == 0)
+            {
+                return ErrorResp.NotFound("Your Children Archived list is empty");
+            }
+
+            return SuccessResp.Ok(myChild);
+        }
+
+        public async Task<IActionResult> UnHideChild(Guid childId)
+        {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+            var userId = payload.UserId;
+
+            var myChild = (await _childrenRepo.WhereAsync(c => c.ParentId == userId && c.Status == ChildrentStatusEnum.Archived && c.Id == childId)).FirstOrDefault();
+            if (myChild == null)
+            {
+                return ErrorResp.NotFound("This child not found or child is not in Archived list");
+            }
+
+            //var child = await _childrenRepo.FoundOrThrowAsync(childId);
+
+            myChild.Status = ChildrentStatusEnum.Active;
+            await _childrenRepo.UpdateAsync(myChild);
+
+            return SuccessResp.Ok("Un-archive child successfully");
+        }
     }
 }

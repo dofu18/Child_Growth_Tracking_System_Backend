@@ -76,6 +76,13 @@ namespace ControllerLayer.Controllers
             return await _authService.HandleRegister(req);
         }
 
+        [HttpPost("register/doctor")]
+        public async Task<IActionResult> RegisterDoctor([FromBody] RegisterReq req)
+        {
+            _logger.LogInformation("Register Doctor");
+            return await _authService.HandleRegisterDoctor(req);
+        }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginReq req)
         {

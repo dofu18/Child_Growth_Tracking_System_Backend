@@ -29,8 +29,8 @@ namespace DomainLayer.Enum
         }
         public enum GroupAgeEnum
         {
-            Under2,
             From2to19,
+            Under2,
         }
         public enum DoctorLicenseStatusEnum
         {
@@ -92,6 +92,16 @@ namespace DomainLayer.Enum
             Published,
             Archived,
             Deleted,
+        }
+        public enum RatingTypeEnum
+        {
+            System,
+            Doctor
+        }
+        public enum BillingCycleEnum
+        {
+            Monthly,
+            Yearly
         }
     }
 }

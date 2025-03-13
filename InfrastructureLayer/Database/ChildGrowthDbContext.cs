@@ -20,15 +20,11 @@ namespace InfrastructureLayer.Database
         public DbSet<ConsultationRequest> ConsultationRequests { get; set; }
         public DbSet<ConsultationResponse> ConsultationResponses { get; set; }
         public DbSet<DoctorLicense> DoctorLicense { get; set; }
-        public DbSet<DoctorSpecialization> DoctorSpecialization { get; set; }
-        public DbSet<Feature> Features { get; set; }
         public DbSet<GrowthRecord> GrowthRecords { get; set; }
         public DbSet<Package> Packages { get; set; }
-        public DbSet<PackageFeature> PackageFeatures { get; set; }
         public DbSet<RatingFeedback> RatingFeedbacks { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<SharingProfile> SharingProfiles { get; set; }
-        public DbSet<Specialization> Specializations { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<UserPackage> UserPackages { get; set; }
@@ -70,7 +66,47 @@ namespace InfrastructureLayer.Database
                 e.Property(x => x.BmiBottom).IsRequired();
                 e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
                 e.Property(x => x.UpdatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
-
+            });
+            modelBuilder.Entity<BmiCategory>().HasData(new BmiCategory
+            {
+                Id = Guid.Parse("01955c45-f781-7835-8d4b-aff20764aca6"),
+                Name = "Under Weight",
+                BmiTop = 5,
+                BmiBottom = 0,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("01955c46-2df8-74fd-bbb1-c8c1d792ee5b"),
+                Name = "Healthy Weight",
+                BmiTop = 85,
+                BmiBottom = 5,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("01955c46-5e27-7c17-97ee-a06ded033c32"),
+                Name = "Over Weight",
+                BmiTop = 85,
+                BmiBottom = 95,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("01955c46-81c0-7e96-9961-3b490a2d1c8f"),
+                Name = "Obesity",
+                BmiTop = 95,
+                BmiBottom = 120,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("01955c46-a1d5-7fe9-a779-da396903a7a4"),
+                Name = "Servere Obesity",
+                BmiTop = 120,
+                BmiBottom = 140,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
             });
             modelBuilder.Entity<Children>(e =>
             {
@@ -127,22 +163,10 @@ namespace InfrastructureLayer.Database
                 e.Property(x => x.Specialize).IsRequired(false).HasMaxLength(200);
                 e.Property(x => x.Status).HasConversion<string>().HasDefaultValue(DoctorLicenseStatusEnum.Pending);
                 e.HasOne(x => x.User).WithOne().HasForeignKey<DoctorLicense>(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
-                e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
-                e.Property(x => x.UpdatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-            });
-            modelBuilder.Entity<DoctorSpecialization>(e =>
-            {
-                e.HasKey(x => x.Id);
-                e.HasOne(x => x.DoctorLicense).WithMany().HasForeignKey(x => x.DoctorLicenseId).OnDelete(DeleteBehavior.Cascade);
-                e.HasOne(x => x.Specialization).WithMany().HasForeignKey(x => x.SpecializtionId).OnDelete(DeleteBehavior.Cascade);
-            });
-            modelBuilder.Entity<Feature>(e =>
-            {
-                e.HasKey(x => x.Id);
-                e.Property(x => x.FeatureName).IsRequired().HasMaxLength(50);
-                e.Property(x => x.Description).IsRequired(false).HasMaxLength(300);
-                e.HasOne(x => x.CreatedUser).WithMany().HasForeignKey(x => x.CreatedBy).OnDelete(DeleteBehavior.Cascade);
+                e.Property(x => x.RatingAvg).IsRequired();
+                e.Property(x => x.Degrees).IsRequired(false).HasMaxLength(500);
+                e.Property(x => x.Research).IsRequired(false).HasMaxLength(500);
+                e.Property(x => x.Languages).IsRequired(false).HasMaxLength(500);
                 e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
                 e.Property(x => x.UpdatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -167,20 +191,13 @@ namespace InfrastructureLayer.Database
                 e.Property(x => x.PackageName).IsRequired().HasMaxLength(100);
                 e.Property(x => x.Description).IsRequired(false).HasMaxLength(200);
                 e.Property(x => x.Price).IsRequired();
-                e.Property(x => x.DurationMonths).IsRequired();
-                e.Property(x => x.TrialPeriodDays).IsRequired();
+                e.Property(x => x.BillingCycle).HasConversion<string>().HasDefaultValue(BillingCycleEnum.Monthly);
                 e.Property(x => x.MaxChildrentAllowed).IsRequired();
                 e.Property(x => x.Status).HasConversion<string>().HasDefaultValue(PackageStatusEnum.Pending);
                 e.HasOne(x => x.CreatedUser).WithMany().HasForeignKey(x => x.CreatedBy).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
                 e.Property(x => x.UpdatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-            });
-            modelBuilder.Entity<PackageFeature>(e =>
-            {
-                e.HasKey(x => x.Id);
-                e.HasOne(x => x.Package).WithMany().HasForeignKey(x => x.PackageId).OnDelete(DeleteBehavior.Cascade);
-                e.HasOne(x => x.Feature).WithMany().HasForeignKey(x => x.FeatureId).OnDelete(DeleteBehavior.Cascade);
             });
             modelBuilder.Entity<RatingFeedback>(e =>
             {
@@ -189,6 +206,8 @@ namespace InfrastructureLayer.Database
                 e.Property(x => x.Rating).IsRequired();
                 e.Property(x => x.Feedback).IsRequired(false).HasMaxLength(500);
                 e.Property(x => x.Status).HasConversion<string>().HasDefaultValue(RatingFeedbackStatusEnum.Publish);
+                e.Property(x => x.RatingType).HasConversion<string>().HasDefaultValue(RatingTypeEnum.Doctor);
+                e.HasOne(x => x.Doctor).WithMany().HasForeignKey(x => x.DoctorId).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
                 e.Property(x => x.UpdatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
@@ -200,46 +219,37 @@ namespace InfrastructureLayer.Database
                 e.Property(x => x.Status).HasConversion<string>().HasDefaultValue(RoleStatusEnum.Pending);
 
             });
-            //modelBuilder.Entity<Role>().HasData(new Role
-            //{
-            //    Id = Guid.Parse(GeneralConst.DEFAULT_GUID),
-            //    RoleName = "Admin",
-            //    Description = "This person have fully permission of system",
-            //    Status = RoleStatusEnum.Active,
-            //}, new Role
-            //{
-            //    Id = Guid.Parse(GeneralConst.ROLE_STAFF_GUID),
-            //    RoleName = "Staff",
-            //    Description = "This person have under permission of admin",
-            //    Status = RoleStatusEnum.Active,
-            //}, new Role
-            //{
-            //    Id = Guid.Parse(GeneralConst.ROLE_USER_GUID),
-            //    RoleName = "User",
-            //    Description = "This person have limited permission of system",
-            //    Status = RoleStatusEnum.Active,
-            //}, new Role
-            //{
-            //    Id = Guid.Parse(GeneralConst.ROLE_DOCTOR_GUID),
-            //    RoleName = "Doctor",
-            //    Description = "This person have permission to response user",
-            //    Status = RoleStatusEnum.Active,
-            //});
+            modelBuilder.Entity<Role>().HasData(new Role
+            {
+                Id = Guid.Parse(GeneralConst.ADMIN_GUID),
+                RoleName = "Admin",
+                Description = "This person have fully permission of system",
+                Status = RoleStatusEnum.Active,
+            }, new Role
+            {
+                Id = Guid.Parse(GeneralConst.ROLE_STAFF_GUID),
+                RoleName = "Staff",
+                Description = "This person have under permission of admin",
+                Status = RoleStatusEnum.Active,
+            }, new Role
+            {
+                Id = Guid.Parse(GeneralConst.ROLE_USER_GUID),
+                RoleName = "User",
+                Description = "This person have limited permission of system",
+                Status = RoleStatusEnum.Active,
+            }, new Role
+            {
+                Id = Guid.Parse(GeneralConst.ROLE_DOCTOR_GUID),
+                RoleName = "Doctor",
+                Description = "This person have permission to response user",
+                Status = RoleStatusEnum.Active,
+            });
             modelBuilder.Entity<SharingProfile>(e =>
             {
                 e.HasKey(x => x.Id);
                 e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
                 e.HasOne(x => x.Children).WithMany().HasForeignKey(x => x.ChildrentId).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
-            });
-            modelBuilder.Entity<Specialization>(e =>
-            {
-                e.HasKey(x => x.Id);
-                e.Property(x => x.Name).IsRequired().HasMaxLength(50);
-                e.Property(x => x.Description).IsRequired(false).HasMaxLength(200);
-                e.HasOne(x => x.CreatedUser).WithMany().HasForeignKey(x => x.CreatedBy).OnDelete(DeleteBehavior.Cascade);
-                e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
-                e.Property(x => x.UpdatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
             modelBuilder.Entity<Transaction>(e =>
             {
@@ -270,6 +280,7 @@ namespace InfrastructureLayer.Database
                 e.Property(x => x.Avatar).IsRequired(false).HasMaxLength(1000);
                 e.Property(x => x.Status).HasConversion<string>().HasDefaultValue(UserStatusEnum.NotVerified);
                 e.Property(x => x.AuthType).HasConversion<string>().HasDefaultValue(AuthTypeEnum.Email);
+                e.Property(x => x.IsTrial).IsRequired().HasDefaultValue(false);
                 e.HasOne(x => x.Role).WithMany().HasForeignKey(x => x.RoleId).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
@@ -278,6 +289,7 @@ namespace InfrastructureLayer.Database
                 e.HasKey(x => x.Id);
                 e.HasOne(x => x.Owner).WithMany().HasForeignKey(x => x.OwnerId).OnDelete(DeleteBehavior.Cascade);
                 e.HasOne(x => x.Package).WithMany().HasForeignKey(x => x.PackageId).OnDelete(DeleteBehavior.Cascade);
+                e.Property(x => x.PriceAtSubscription).IsRequired();
                 e.Property(x => x.Status).HasConversion<string>().HasDefaultValue(UserPackageStatusEnum.OnGoing);
                 e.Property(x => x.StartDate).IsRequired().HasDefaultValueSql("CURRENT_DATE");
                 e.Property(x => x.ExpireDate).IsRequired().HasDefaultValueSql("CURRENT_DATE");

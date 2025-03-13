@@ -34,14 +34,12 @@ namespace ApplicationLayer.Service
     {
         private readonly IGenericRepository<DoctorLicense> _licenseRepo;
         private readonly IGenericRepository<User> _userRepo;
-        private readonly IGenericRepository<DoctorSpecialization> _specializationRepo;
         private readonly IGenericRepository<SharingProfile> _sharingRepo;
 
-        public DoctorLicenseService(IGenericRepository<DoctorLicense> licenseRepo, IGenericRepository<User> userRepo, IGenericRepository<DoctorSpecialization> specializationRepo,IGenericRepository<SharingProfile> sharingRepo, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
+        public DoctorLicenseService(IGenericRepository<DoctorLicense> licenseRepo, IGenericRepository<User> userRepo, IGenericRepository<SharingProfile> sharingRepo, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
         {
             _licenseRepo = licenseRepo;
             _userRepo = userRepo;
-            _specializationRepo = specializationRepo;
             _sharingRepo = sharingRepo;
         }
 
@@ -237,19 +235,19 @@ namespace ApplicationLayer.Service
             }
 
             // Kiểm tra xem đã tồn tại bản ghi chia sẻ chưa
-            var existingShare = await _sharingRepo.WhereAsync(s => s.UserId == receiverId && s.DoctorId == doctorId);
+            //var existingShare = await _sharingRepo.WhereAsync(s => s.UserId == receiverId && s.DoctorId == doctorId);
 
-            if (existingShare.Any())
-            {
-                return ErrorResp.BadRequest("This doctor’s profile has already been shared with the recipient.");
-            }
+            //if (existingShare.Any())
+            //{
+            //    return ErrorResp.BadRequest("This doctor’s profile has already been shared with the recipient.");
+            //}
 
             // Tạo bản ghi mới trong bảng SharingProfiles
             var shareProfile = new SharingProfile
             {
                 Id = Guid.NewGuid(),
                 UserId = receiverId,
-                DoctorId = doctorId, // Tạo cột riêng cho DoctorId trong SharingProfile nếu cần
+                //DoctorId = doctorId, // Tạo cột riêng cho DoctorId trong SharingProfile nếu cần
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
