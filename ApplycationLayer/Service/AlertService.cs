@@ -41,9 +41,18 @@ namespace ApplicationLayer.Service
             _childrenRepo = childrenRepo;
         }
 
-        // Kiểm tra BMI và gửi cảnh báo
         public async Task<IActionResult> CheckAndSendHealthAlerts(Guid childId, decimal bmi)
         {
+            // Lấy danh mục BMI từ cơ sở dữ liệu
+            var bmiCategories = await _bmiRepo.FindAllAsync();
+            if (bmiCategories == null || !bmiCategories.Any())
+            {
+                return ErrorResp.NotFound("No BMI categories configured in the database.");
+            }
+
+            // Tìm danh mục BMI phù hợp
+            var bmiCategory = bmiCategories.FirstOrDefault(c => bmi >= c.BmiBottom && bmi <= c.BmiTop);
+
             // Kiểm tra token
             var payload = ExtractPayload();
             if (payload == null)
@@ -52,61 +61,32 @@ namespace ApplicationLayer.Service
             }
             var userId = payload.UserId;
 
+            // Không tìm thấy danh mục BMI phù hợp
+            if (bmiCategory == null)
+            {
+                return ErrorResp.NotFound("No BMI category found for the given BMI.");
+            }
+
             // Kiểm tra xem thông báo chưa đọc cho trẻ này đã tồn tại chưa
             var existingAlert = await _alertRepo.FindAsync(a => a.ChildrentId == childId && !a.IsRead);
             if (existingAlert != null)
             {
-                // Nếu đã có thông báo chưa đọc, không tạo thêm
                 return SuccessResp.Ok("An unread alert already exists for this child.");
             }
 
-            // Xác định thông báo dựa trên BMI tiêu chuẩn của WHO
-            string alertMessage;
-
-            if (bmi < 16.0m)
-            {
-                alertMessage = "Trẻ đang ở tình trạng gầy độ III (nguy cơ sức khỏe nghiêm trọng). Hãy tham khảo ý kiến bác sĩ ngay lập tức.";
-            }
-            else if (bmi >= 16.0m && bmi < 17.0m)
-            {
-                alertMessage = "Trẻ đang ở tình trạng gầy độ II. Hãy tham khảo ý kiến của bác sĩ.";
-            }
-            else if (bmi >= 17.0m && bmi < 18.5m)
-            {
-                alertMessage = "Trẻ đang ở tình trạng gầy độ I. Khuyến nghị tham khảo ý kiến bác sĩ.";
-            }
-            else if (bmi >= 18.5m && bmi < 25.0m)
-            {
-                alertMessage = "Trẻ có BMI bình thường. Tiếp tục duy trì chế độ dinh dưỡng và lối sống lành mạnh.";
-            }
-            else if (bmi >= 25.0m && bmi < 30.0m)
-            {
-                alertMessage = "Trẻ đang trong tình trạng thừa cân. Hãy điều chỉnh chế độ ăn uống và vận động hợp lý.";
-            }
-            else if (bmi >= 30.0m && bmi < 35.0m)
-            {
-                alertMessage = "Trẻ đang ở mức béo phì độ I. Khuyến nghị tham khảo ý kiến bác sĩ để có hướng dẫn cụ thể.";
-            }
-            else if (bmi >= 35.0m && bmi < 40.0m)
-            {
-                alertMessage = "Trẻ đang ở mức béo phì độ II. Hãy liên hệ với bác sĩ để có kế hoạch điều trị.";
-            }
-            else // bmi >= 40.0
-            {
-                alertMessage = "Trẻ đang ở mức béo phì độ III (nguy cơ sức khỏe nghiêm trọng). Hãy tham khảo ý kiến bác sĩ ngay lập tức.";
-            }
-
             // Tạo thông báo mới
+            string alertMessage = GetAlertMessage(bmi);
             var alert = new Alert
             {
                 Id = Guid.NewGuid(),
                 ChildrentId = childId,
-                AlertDate = DateTime.Now,
+                AlertDate = DateTime.UtcNow, // Use UtcNow instead of Now
                 Message = alertMessage,
                 ReveivedUserId = userId,
-                IsRead = false, // Đánh dấu trạng thái chưa đọc
-                CreatedAt = DateTime.Now
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow // Use UtcNow instead of Now
             };
+
 
             // Lưu thông báo vào cơ sở dữ liệu
             await _alertRepo.CreateAsync(alert);
@@ -115,28 +95,68 @@ namespace ApplicationLayer.Service
             return SuccessResp.Created(new { message = "Health alert created successfully.", data = alert });
         }
 
+        // Helper method to get alert message based on BMI
+        private string GetAlertMessage(decimal bmi)
+        {
+            if (bmi < 16.0m)
+                return "Trẻ đang ở tình trạng gầy độ III (nguy cơ sức khỏe nghiêm trọng). Hãy tham khảo ý kiến bác sĩ ngay lập tức.";
+            if (bmi >= 16.0m && bmi < 17.0m)
+                return "Trẻ đang ở tình trạng gầy độ II. Hãy tham khảo ý kiến của bác sĩ.";
+            if (bmi >= 17.0m && bmi < 18.5m)
+                return "Trẻ đang ở tình trạng gầy độ I. Khuyến nghị tham khảo ý kiến bác sĩ.";
+            if (bmi >= 18.5m && bmi < 25.0m)
+                return "Trẻ có BMI bình thường. Tiếp tục duy trì chế độ dinh dưỡng và lối sống lành mạnh.";
+            if (bmi >= 25.0m && bmi < 30.0m)
+                return "Trẻ đang trong tình trạng thừa cân. Hãy điều chỉnh chế độ ăn uống và vận động hợp lý.";
+            if (bmi >= 30.0m && bmi < 35.0m)
+                return "Trẻ đang ở mức béo phì độ I. Khuyến nghị tham khảo ý kiến bác sĩ để có hướng dẫn cụ thể.";
+            if (bmi >= 35.0m && bmi < 40.0m)
+                return "Trẻ đang ở mức béo phì độ II. Hãy liên hệ với bác sĩ để có kế hoạch điều trị.";
+            return "Trẻ đang ở mức béo phì độ III (nguy cơ sức khỏe nghiêm trọng). Hãy tham khảo ý kiến bác sĩ ngay lập tức.";
+        }
 
 
-        // Lấy danh sách cảnh báo sức khỏe theo UserId
+
+
         public async Task<IEnumerable<AlertDto>> GetHealthAlertsByUser(Guid userId)
         {
-            // Truy xuất danh sách cảnh báo từ cơ sở dữ liệu
             var alerts = await _alertRepo.FindAllAsync(a => a.ReveivedUserId == userId);
 
             // Map các cảnh báo sang DTOs
-            return alerts.Select(alert => new AlertDto
+            var alertDtos = new List<AlertDto>();
+            foreach (var alert in alerts)
             {
-                ChildrentId = alert.ChildrentId,
-                ChildrenName = GetChildrenName(alert.ChildrentId), // Lấy tên trẻ từ hàm
-                AlertDate = alert.AlertDate,
-                Message = alert.Message,
-                ReceivedUserId = alert.ReveivedUserId,
-                ReceivedUserName = GetUserName(alert.ReveivedUserId), // Lấy tên người dùng từ hàm
-                IsRead = alert.IsRead,
-                CreatedAt = alert.CreatedAt,
-                UpdatedAt = alert.UpdatedAt
-            });
+                var childrenName = await GetChildrenNameAsync(alert.ChildrentId); // Refactored to async
+                var userName = await GetUserNameAsync(alert.ReveivedUserId); // Refactored to async
+
+                alertDtos.Add(new AlertDto
+                {
+                    ChildrentId = alert.ChildrentId,
+                    ChildrenName = childrenName,
+                    AlertDate = alert.AlertDate,
+                    Message = alert.Message,
+                    ReceivedUserId = alert.ReveivedUserId,
+                    ReceivedUserName = userName,
+                    IsRead = alert.IsRead,
+                    CreatedAt = alert.CreatedAt,
+                    UpdatedAt = alert.UpdatedAt
+                });
+            }
+            return alertDtos;
         }
+
+        private async Task<string> GetChildrenNameAsync(Guid childId)
+        {
+            var child = await _childrenRepo.FindByIdAsync(childId);
+            return child?.Name ?? "Unknown Child";
+        }
+
+        private async Task<string> GetUserNameAsync(Guid userId)
+        {
+            var user = await _userRepo.FindByIdAsync(userId);
+            return user?.Name ?? "Unknown User";
+        }
+
 
         // Đánh dấu cảnh báo là đã đọc
         public async Task MarkAlertAsRead(Guid alertId)
@@ -144,32 +164,13 @@ namespace ApplicationLayer.Service
             var alert = await _alertRepo.FindByIdAsync(alertId);
             if (alert == null)
             {
-                throw new Exception("Alert not found.");
+                throw new Exception($"Alert with ID {alertId} not found.");
             }
 
-            alert.IsRead = true; // Đánh dấu là đã đọc
+            alert.IsRead = true;
             alert.UpdatedAt = DateTime.Now;
 
             await _alertRepo.UpdateAsync(alert);
         }
-
-        private string GetChildrenName(Guid childId)
-        {
-            // Tìm trẻ từ cơ sở dữ liệu bằng childId
-            var child = _childrenRepo.FindByIdAsync(childId).Result;
-
-            // Trả về tên trẻ nếu tìm thấy, ngược lại trả về giá trị mặc định
-            return child?.Name ?? "Unknown Child";
-        }
-
-        private string GetUserName(Guid userId)
-        {
-            // Tìm người dùng từ cơ sở dữ liệu bằng userId
-            var user = _userRepo.FindByIdAsync(userId).Result;
-
-            // Trả về tên người dùng nếu tìm thấy, ngược lại trả về giá trị mặc định
-            return user?.Name ?? "Unknown User";
-        }
-
     }
 }
