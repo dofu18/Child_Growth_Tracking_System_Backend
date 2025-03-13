@@ -193,19 +193,18 @@ namespace InfrastructureLayer.Repository
             return await query.FirstOrDefaultAsync(predicate);
         }
 
-        public async Task<IEnumerable<T>> FindAllAsync(Expression<Func<T, bool>> predicate, params string[] navigationProperties)
+        public async Task<IEnumerable<T>> FindAllAsync(Expression<Func<T, bool>> predicate = null, params string[] navigationProperties)
         {
             IQueryable<T> query = _context.Set<T>();
 
-            // Include navigation properties if needed
             foreach (var navigationProperty in navigationProperties)
             {
                 query = query.Include(navigationProperty);
             }
 
-            // Apply the predicate
-            return await query.Where(predicate).ToListAsync();
+            return predicate == null
+                ? await query.ToListAsync()
+                : await query.Where(predicate).ToListAsync();
         }
-
     }
 }

@@ -32,8 +32,7 @@ namespace InfrastructureLayer.Repository
         params string[] navigationProperties);
         Task<int> CountAsync(Expression<Func<T, bool>>? filter = null);
         Task<T> FindAsync(Expression<Func<T, bool>> predicate, params string[] navigationProperties);
-
-        Task<IEnumerable<T>> FindAllAsync(Expression<Func<T, bool>> predicate, params string[] navigationProperties);
+        Task<IEnumerable<T>> FindAllAsync(Expression<Func<T, bool>> predicate = null, params string[] navigationProperties);
     }
 
 }
