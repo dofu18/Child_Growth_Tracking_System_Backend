@@ -96,5 +96,10 @@ namespace DomainLayer.Enum
             System,
             Doctor
         }
+        public enum BillingCycleEnum
+        {
+            Monthly,
+            Yearly
+        }
     }
 }

@@ -56,8 +56,9 @@ namespace ApplicationLayer.Service
                     PackageName = dto.PackageName,
                     Description = dto.Description,
                     Price = dto.Price,
-                    DurationMonths = dto.DurationMonths,
-                    TrialPeriodDays = dto.TrialPeriodDays,
+                    BillingCycle = dto.BillingCycle,
+                    //DurationMonths = dto.DurationMonths,
+                    //TrialPeriodDays = dto.TrialPeriodDays,
                     MaxChildrentAllowed = dto.MaxChildrentAllowed,
                     CreatedBy = userId,
                     Status = PackageStatusEnum.Published,
@@ -122,7 +123,7 @@ namespace ApplicationLayer.Service
                 }
 
                 // Nếu gói đã hết hạn
-                activePackage.ExpireDate = currentDate.AddMonths(package.DurationMonths);
+                //activePackage.ExpireDate = currentDate.AddMonths(package.DurationMonths);
 
                 // Cập nhật vào database
                 await _userPackageRepo.UpdateAsync(activePackage);

@@ -174,7 +174,7 @@ namespace ApplicationLayer.Service
                     PackageId = transaction.PackageId,
                     OwnerId = transaction.UserId,
                     StartDate = DateOnly.FromDateTime(DateTime.UtcNow),
-                    ExpireDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(package.DurationMonths)), // Tính thời gian hết hạn dựa trên package
+                    //ExpireDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(package.DurationMonths)), // Tính thời gian hết hạn dựa trên package
                     Status = UserPackageStatusEnum.OnGoing
                 };
 

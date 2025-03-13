@@ -62,9 +62,9 @@ namespace ApplicationLayer.Mapper
                         .ForMember(dest => dest.PaymentStatus, opt => opt.MapFrom(src => src.PaymentStatus.ToString())); // Enum phải chuyển về string
 
             //Feature
-            CreateMap<Feature, FeatureDto>().ReverseMap();
-            CreateMap<Feature, FeatureCreateDto>().ReverseMap();
-            CreateMap<Feature, FeatureUpdateDto>().ReverseMap();
+            //CreateMap<Feature, FeatureDto>().ReverseMap();
+            //CreateMap<Feature, FeatureCreateDto>().ReverseMap();
+            //CreateMap<Feature, FeatureUpdateDto>().ReverseMap();
 
             //Consultation Request
             CreateMap<ConsultationRequest, ConsultationRequestDto>().ReverseMap();
