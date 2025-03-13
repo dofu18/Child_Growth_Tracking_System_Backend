@@ -31,12 +31,14 @@ namespace ApplicationLayer.Service
         private readonly IConfiguration _config;
         private readonly IGenericRepository<Package> _packageRepository;
         private readonly IGenericRepository<Transaction> _transactionRepository;
+        private readonly IGenericRepository<UserPackage> _userPackageRepository;
 
-        public PaymentService(IConfiguration config, IGenericRepository<Package> packageRepository, IGenericRepository<Transaction> transactionRepository, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
+        public PaymentService(IConfiguration config, IGenericRepository<Package> packageRepository, IGenericRepository<Transaction> transactionRepository, IGenericRepository<UserPackage> userPackageRepository, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
         {
             _config = config;
             _packageRepository = packageRepository;
             _transactionRepository = transactionRepository;
+            _userPackageRepository = userPackageRepository;
         }
 
         public async Task<string> CreateVnpayPaymentAsync(HttpContext context, PaymentRequestDto request)
@@ -152,11 +154,31 @@ namespace ApplicationLayer.Service
                 return new PaymentResponseDto { Success = false };
             }
 
+            // Lấy thông tin package từ database
+            var package = await _packageRepository.FindByIdAsync(transaction.PackageId);
+            if (package == null)
+            {
+                throw new Exception("Package not found.");
+            }
+
             // Cập nhật trạng thái thanh toán
             if (vnp_ResponseCode == "00") // "00" là mã giao dịch thành công
             {
                 transaction.PaymentStatus = PaymentStatusEnum.Successfully;
                 transaction.PaymentDate = DateTime.UtcNow;
+
+                // Lưu vào bảng UserPackage
+                var newUserPackage = new UserPackage
+                {
+                    Id = Guid.NewGuid(),
+                    PackageId = transaction.PackageId,
+                    OwnerId = transaction.UserId,
+                    StartDate = DateOnly.FromDateTime(DateTime.UtcNow),
+                    ExpireDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(package.DurationMonths)), // Tính thời gian hết hạn dựa trên package
+                    Status = UserPackageStatusEnum.OnGoing
+                };
+
+                await _userPackageRepository.CreateAsync(newUserPackage);
             }
             else
             {

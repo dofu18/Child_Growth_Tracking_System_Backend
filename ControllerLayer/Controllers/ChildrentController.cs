@@ -58,14 +58,14 @@ namespace ControllerLayer.Controllers
         }
 
         [Protected]
-        [HttpPut("/update/{id}")]
+        [HttpPut("update/{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] ChildrenUpdateDto dto)
         {
             return await _childrenService.Update(id, dto);
         }
 
         [Protected]
-        [HttpDelete("/delete/{id}")]
+        [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             _logger.LogInformation($"Delete children request received for ID: {id}");
@@ -74,7 +74,7 @@ namespace ControllerLayer.Controllers
         }
 
         [Protected]
-        [HttpPost("/hideChildren/{id}")]
+        [HttpPost("hideChildren/{id}")]
         public async Task<IActionResult> HideChildren(Guid id, [FromBody] bool isHidden)
         {
             return await _childrenService.HideChildren(id, isHidden);

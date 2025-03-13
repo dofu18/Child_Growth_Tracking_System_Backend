@@ -90,23 +90,42 @@ namespace ApplicationLayer.Service
             {
                 var userId = payload.UserId;
 
-                //Kiểm tra package có tồn tại không
+                // Kiểm tra package có tồn tại không
                 var package = await _packageRepo.FindByIdAsync(packageId);
                 if (package == null)
                 {
-                    return ErrorResp.NotFound("Children not found");
+                    return ErrorResp.NotFound("Package not found");
                 }
 
                 //Kiểm tra user đã có gói đang hoạt động chưa
-                var currentPackage = await _userPackageRepo.FindByIdAsync(userId);
-                if (currentPackage == null)
+                var currentPackage = await _userPackageRepo
+                                .WhereAsync(up => up.OwnerId == userId && up.Status == UserPackageStatusEnum.OnGoing);
+                if (!currentPackage.Any())
                 {
                     return ErrorResp.BadRequest("No active package found for renewal.");
                 }
 
-                //Cập nhật ngày hết hạn của gói hiện tại
-                currentPackage.ExpireDate = currentPackage.ExpireDate.AddMonths(package.DurationMonths);
-                await _userPackageRepo.UpdateAsync(currentPackage);
+                // Lấy phần tử đầu tiên của danh sách
+                var activePackage = currentPackage.FirstOrDefault();
+                if (activePackage == null)
+                {
+                    return ErrorResp.BadRequest("No active package found.");
+                }
+
+                // Lấy ngày hiện tại dưới dạng DateOnly
+                DateOnly currentDate = DateOnly.FromDateTime(DateTime.UtcNow);
+
+                // Nếu gói vẫn còn hạn
+                if (activePackage.ExpireDate > currentDate)
+                {
+                    return ErrorResp.BadRequest("Your package is still active, renewal is not necessary.");
+                }
+
+                // Nếu gói đã hết hạn
+                activePackage.ExpireDate = currentDate.AddMonths(package.DurationMonths);
+
+                // Cập nhật vào database
+                await _userPackageRepo.UpdateAsync(activePackage);
 
                 //Tạo transaction cho lần gia hạn
                 var transaction = new Transaction
@@ -120,7 +139,9 @@ namespace ApplicationLayer.Service
                     PaymentMethod = "CreditCard",
                     TransactionDate = DateTime.UtcNow,
                     PaymentStatus = GeneralEnum.PaymentStatusEnum.Successfully,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    MerchantTransactionId = Guid.NewGuid().ToString(),
+                    Description = "Renewal payment for package"
                 };
 
                 await _transactionRepo.CreateAsync(transaction);
@@ -130,7 +151,7 @@ namespace ApplicationLayer.Service
             }
             catch (Exception ex)
             {
-                return ErrorResp.InternalServerError(ex.Message);
+                return ErrorResp.InternalServerError($"Exception: {ex.Message} | Inner: {ex.InnerException?.Message}");
             }
         }
 
