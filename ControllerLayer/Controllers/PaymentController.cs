@@ -40,7 +40,6 @@ namespace ControllerLayer.Controllers
             }
         }
 
-        [Protected]
         [HttpGet("vnpay-return")]
         public async Task<IActionResult> VnpayReturn()
         {
