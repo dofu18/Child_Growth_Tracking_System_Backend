@@ -19,6 +19,8 @@ using ApplicationLayer.DTOs.Payment;
 using ApplicationLayer.DTOs.Feature;
 using ApplicationLayer.DTOs.Consultation.ConsultationRequests;
 using ApplicationLayer.DTOs.Consultation.ConsultationResponses;
+using ApplicationLayer.DTOs.Alert;
+using ApplicationLayer.DTOs;
 
 namespace ApplicationLayer.Mapper
 {
@@ -26,6 +28,11 @@ namespace ApplicationLayer.Mapper
     {
         public MappingProfile()
         {
+            // Alert Mapping
+            CreateMap<Alert, AlertDto>().ReverseMap(); 
+            CreateMap<Alert, CheckHealthAlertRequestDto>().ReverseMap();
+
+
             //BmiCategory
             CreateMap<BmiCategory, BmiCategoryCreateDto>().ReverseMap();
 
