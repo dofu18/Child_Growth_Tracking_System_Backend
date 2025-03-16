@@ -1,0 +1,21 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using DomainLayer.Entities;
+
+namespace ApplicationLayer.DTOs.BMI
+{
+    public class GrowthRecordDto
+    {
+        public Guid ChildrentId { get; set; }
+        public decimal Weight { get; set; }
+        public decimal Height { get; set; }
+        public decimal Bmi { get; set; }
+        public Guid BmiCategory { get; set; }
+        public decimal BmiPercentile { get; set; }
+        public string Notes { get; set; }
+        public Guid CreatedBy { get; set; }
+    }
+}

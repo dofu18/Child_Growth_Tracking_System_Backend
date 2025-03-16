@@ -116,12 +116,6 @@ namespace ApplicationLayer.Service
 
         public async Task<PaymentResponseDto> CallBack(IQueryCollection queryParams)
         {
-            var payload = ExtractPayload();
-            if (payload == null)
-            {
-                throw new UnauthorizedAccessException("Invalid token");
-            }
-
             var vnpay = new VnPayLibrary();
             foreach (var (key, value) in queryParams)
             {
