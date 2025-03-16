@@ -45,7 +45,6 @@ namespace DomainLayer.Enum
             Reject,
             Pending,
             Archived,
-            InProgress,
             Completed,
         }
         public enum PaymentStatusEnum
