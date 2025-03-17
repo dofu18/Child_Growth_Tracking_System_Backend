@@ -180,5 +180,31 @@ namespace InfrastructureLayer.Repository
                 query = query.Include(navigationProperty);
             return query;
         }
+
+        public async Task<T> FindAsync(Expression<Func<T, bool>> predicate, params string[] navigationProperties)
+        {
+            IQueryable<T> query = _context.Set<T>();
+
+            foreach (var navigationProperty in navigationProperties)
+            {
+                query = query.Include(navigationProperty);
+            }
+
+            return await query.FirstOrDefaultAsync(predicate);
+        }
+
+        public async Task<IEnumerable<T>> FindAllAsync(Expression<Func<T, bool>> predicate = null, params string[] navigationProperties)
+        {
+            IQueryable<T> query = _context.Set<T>();
+
+            foreach (var navigationProperty in navigationProperties)
+            {
+                query = query.Include(navigationProperty);
+            }
+
+            return predicate == null
+                ? await query.ToListAsync()
+                : await query.Where(predicate).ToListAsync();
+        }
     }
 }
