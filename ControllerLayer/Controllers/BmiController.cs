@@ -38,9 +38,9 @@ namespace ControllerLayer.Controllers
 
         [Protected]
         [HttpGet("tracking")]
-        public async Task<IActionResult> GrowthTracking([FromQuery] Guid childId)
+        public async Task<IActionResult> GrowthTracking([FromQuery] Guid childId, DateTime? startDate, DateTime? endDate)
         {
-            var result = await _growthTrackingService.GetGrowthTracking(childId);
+            var result = await _growthTrackingService.GetGrowthTracking(childId, startDate, endDate);
             return Ok(result);
         }
     }

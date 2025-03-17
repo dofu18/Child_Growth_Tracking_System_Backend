@@ -90,8 +90,8 @@ namespace ApplicationLayer.Service
                 var newUser = new User
                 {
                     Email = info.Email,
-                    Name = info.FullName ?? "Guest",
-                    Status = UserStatusEnum.NotVerified,
+                    Name = info.FullName,
+                    Status = UserStatusEnum.Active,
                     AuthType = AuthTypeEnum.Google,
                     UserName = info.Email,
                     RoleId = Guid.Parse(GeneralConst.ROLE_USER_GUID),

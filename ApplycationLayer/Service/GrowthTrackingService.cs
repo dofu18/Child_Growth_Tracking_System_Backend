@@ -15,7 +15,7 @@ namespace ApplicationLayer.Service
 {
     public interface IGrowthTrackingService
     {
-        Task<IActionResult> GetGrowthTracking(Guid childId);
+        Task<IActionResult> GetGrowthTracking(Guid childId, DateTime? startDate, DateTime? endDate);
 
     }
 
@@ -33,7 +33,7 @@ namespace ApplicationLayer.Service
             _userRepo = userRepo;
         }
 
-        public async Task<IActionResult> GetGrowthTracking(Guid childId)
+        public async Task<IActionResult> GetGrowthTracking(Guid childId, DateTime? startDate, DateTime? endDate)
         {
             var payload = ExtractPayload();
             if (payload == null)
@@ -49,7 +49,15 @@ namespace ApplicationLayer.Service
                 return ErrorResp.BadRequest("You don't have this children in system!");
             }
 
-            var result = await _growthRepo.WhereAsync(g => g.ChildrentId == childId);
+            if (startDate.HasValue && endDate.HasValue && startDate > endDate)
+            {
+                return ErrorResp.BadRequest("Start date cannot be greater than end date");
+            }
+
+
+            var result = await _growthRepo.WhereAsync(g => g.ChildrentId == childId &&
+                            (!startDate.HasValue || g.CreatedAt >= startDate.Value) &&
+                            (!endDate.HasValue || g.CreatedAt <= endDate.Value));
 
             return SuccessResp.Ok(result);
         }

@@ -1,3 +1,4 @@
+using ApplicationLayer.DTOs.Supabase;
 using ApplicationLayer.Service;
 using DomainLayer.Entities;
 using InfrastructureLayer.Core.Cache;
@@ -21,6 +22,7 @@ builder.Services.AddControllers();
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication("Bearer").AddBearerToken();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
@@ -51,6 +53,9 @@ builder.Services.AddSwaggerGen(c =>
           new string[] {}
       }
     });
+
+    //File upload support
+    c.SupportNonNullableReferenceTypes();
 });
 
 // Configure CORS
@@ -100,6 +105,9 @@ builder.Services.AddScoped<ICacheService, CacheService>();
 var smtpUsername = builder.Configuration.GetValue<string>("SMTPEmail") ?? "smtp_email";
 var smtpPassword = builder.Configuration.GetValue<string>("SMTPPassword") ?? "smtp_password";
 builder.Services.AddSingleton<IMailService>(new MailService("smtp.gmail.com", 587, smtpUsername, smtpPassword));
+//Supabase
+builder.Services.Configure<SupabaseSettings>(
+    builder.Configuration.GetSection("SupabaseSettings"));
 
 // Register Services
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
@@ -117,6 +125,7 @@ builder.Services.AddScoped<IBmiService, BmiService>();
 builder.Services.AddScoped<IConsultationRequestService, ConsultationRequestService>();
 builder.Services.AddScoped<IConsultationResponseService, ConsultationResponseService>();
 builder.Services.AddScoped<IGrowthTrackingService, GrowthTrackingService>();
+builder.Services.AddScoped<ISupabaseStorageService, SupabaseStorageService>();
 
 
 var app = builder.Build();
