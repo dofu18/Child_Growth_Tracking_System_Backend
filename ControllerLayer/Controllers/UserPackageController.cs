@@ -32,7 +32,7 @@ namespace ControllerLayer.Controllers
         public async Task<IActionResult> RenewMembership([FromBody] RenewPackageDto dto)
         {
             _logger.LogInformation($"Renewing membership for Package: {dto.PackageId}");
-            return await _userPackageService.RenewPackage(dto.PackageId);
+            return await _userPackageService.RenewPackage(dto);
         }
 
         [Protected]

@@ -167,11 +167,26 @@ namespace ApplicationLayer.Service
                     Id = Guid.NewGuid(),
                     PackageId = transaction.PackageId,
                     OwnerId = transaction.UserId,
+                    PriceAtSubscription = transaction.Amount,
                     StartDate = DateOnly.FromDateTime(DateTime.UtcNow),
-                    //ExpireDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(package.DurationMonths)), // Tính thời gian hết hạn dựa trên package
                     Status = UserPackageStatusEnum.OnGoing
                 };
 
+                // Xác định thời gian gia hạn dựa trên BillingCycleEnum
+                if (package.BillingCycle == BillingCycleEnum.Monthly)
+                {
+                    newUserPackage.ExpireDate = newUserPackage.StartDate.AddMonths(1); // Gia hạn thêm 1 tháng
+                }
+                else if (package.BillingCycle == BillingCycleEnum.Yearly)
+                {
+                    newUserPackage.ExpireDate = newUserPackage.StartDate.AddYears(1); // Gia hạn thêm 1 năm
+                }
+                else
+                {
+                    throw new Exception("Invalid billing cycle selection.");
+                }
+
+                // Lưu UserPackage vào database
                 await _userPackageRepository.CreateAsync(newUserPackage);
             }
             else

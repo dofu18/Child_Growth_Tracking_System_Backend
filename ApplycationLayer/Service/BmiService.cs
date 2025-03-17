@@ -68,14 +68,12 @@ namespace ApplicationLayer.Service
             var percentiles = bmiTable[ageInMonths];
 
             // So sánh BMI để tìm percentile phù hợp
-            if (bmi < percentiles[5]) return 5;
-            if (bmi < percentiles[10] && bmi >= percentiles[5]) return 10;
-            if (bmi < percentiles[25] && bmi >= percentiles[10]) return 25;
-            if (bmi < percentiles[50] && bmi >= percentiles[25]) return 50;
-            if (bmi < percentiles[75] && bmi >= percentiles[50]) return 75;
-            if (bmi < percentiles[85] && bmi >= percentiles[75]) return 85;
-            if (bmi < percentiles[95] && bmi >= percentiles[85]) return 95;
-            return 99;
+            if (bmi < percentiles[3]) return 3;
+            if (bmi < percentiles[15]) return 15;
+            if (bmi < percentiles[50]) return 50;
+            if (bmi < percentiles[85]) return 85;
+            if (bmi < percentiles[97]) return 97;
+            return 99; // Trên mức cao nhất
         }
 
         // Lấy danh mục BMI

@@ -18,7 +18,7 @@ namespace ApplicationLayer.Service
     public interface IUserPackageService
     {
         Task<IActionResult> CreatePackage(PackageCreateDto dto);
-        Task<IActionResult> RenewPackage(Guid packageId);
+        Task<IActionResult> RenewPackage(RenewPackageDto dto);
         Task<IActionResult> CancelMembership();
         Task<IActionResult> UpdatePackage(Guid packageId, PackageUpdateDto dto);
         Task<IActionResult> DeletePackage(Guid packageId);
@@ -29,14 +29,12 @@ namespace ApplicationLayer.Service
         private readonly IGenericRepository<UserPackage> _userPackageRepo;
         private readonly IGenericRepository<Package> _packageRepo;
         private readonly IGenericRepository<Transaction> _transactionRepo;
-        private readonly IConfiguration _configuration;
 
-        public UserPackageService(IGenericRepository<UserPackage> userPackageRepo, IGenericRepository<Package> packageRepo, IGenericRepository<Transaction> transactionRepo, IConfiguration configuration, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
+        public UserPackageService(IGenericRepository<UserPackage> userPackageRepo, IGenericRepository<Package> packageRepo, IGenericRepository<Transaction> transactionRepo, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
         {
             _userPackageRepo = userPackageRepo;
             _packageRepo = packageRepo;
             _transactionRepo = transactionRepo;
-            _configuration = configuration;
         }
 
         public async Task<IActionResult> CreatePackage(PackageCreateDto dto)
@@ -57,8 +55,6 @@ namespace ApplicationLayer.Service
                     Description = dto.Description,
                     Price = dto.Price,
                     BillingCycle = dto.BillingCycle,
-                    //DurationMonths = dto.DurationMonths,
-                    //TrialPeriodDays = dto.TrialPeriodDays,
                     MaxChildrentAllowed = dto.MaxChildrentAllowed,
                     CreatedBy = userId,
                     Status = PackageStatusEnum.Published,
@@ -79,7 +75,7 @@ namespace ApplicationLayer.Service
             }
         }
 
-        public async Task<IActionResult> RenewPackage(Guid packageId)
+        public async Task<IActionResult> RenewPackage(RenewPackageDto dto)
         {
             var payload = ExtractPayload();
             if (payload == null)
@@ -92,7 +88,7 @@ namespace ApplicationLayer.Service
                 var userId = payload.UserId;
 
                 // Kiểm tra package có tồn tại không
-                var package = await _packageRepo.FindByIdAsync(packageId);
+                var package = await _packageRepo.FindByIdAsync(dto.PackageId);
                 if (package == null)
                 {
                     return ErrorResp.NotFound("Package not found");
@@ -122,8 +118,23 @@ namespace ApplicationLayer.Service
                     return ErrorResp.BadRequest("Your package is still active, renewal is not necessary.");
                 }
 
-                // Nếu gói đã hết hạn
-                //activePackage.ExpireDate = currentDate.AddMonths(package.DurationMonths);
+                // Xác định thời gian gia hạn dựa trên BillingCycleEnum
+                DateOnly newExpireDate;
+                if (dto.BillingCycle == BillingCycleEnum.Monthly)
+                {
+                    newExpireDate = activePackage.ExpireDate.AddMonths(1); // Gia hạn thêm 1 tháng
+                }
+                else if (dto.BillingCycle == BillingCycleEnum.Yearly)
+                {
+                    newExpireDate = activePackage.ExpireDate.AddYears(1); // Gia hạn thêm 1 năm
+                }
+                else
+                {
+                    return ErrorResp.BadRequest("Invalid billing cycle selection.");
+                }
+
+                // Cập nhật ngày hết hạn
+                activePackage.ExpireDate = newExpireDate;
 
                 // Cập nhật vào database
                 await _userPackageRepo.UpdateAsync(activePackage);
@@ -133,11 +144,11 @@ namespace ApplicationLayer.Service
                 {
                     Id = Guid.NewGuid(),
                     UserId = userId,
-                    PackageId = packageId,
+                    PackageId = dto.PackageId,
                     Amount = package.Price,
-                    Currency = "USD",
+                    Currency = "VND",
                     TransactionType = "Renewal",
-                    PaymentMethod = "CreditCard",
+                    PaymentMethod = "VNPAY",
                     TransactionDate = DateTime.UtcNow,
                     PaymentStatus = GeneralEnum.PaymentStatusEnum.Successfully,
                     CreatedAt = DateTime.UtcNow,
