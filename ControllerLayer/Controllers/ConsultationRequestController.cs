@@ -22,11 +22,11 @@ namespace ControllerLayer.Controllers
 
         [Protected]
         [HttpPost("send")]
-        public async Task<IActionResult> SendRequest([FromBody] ConsultationRequestCreateDto dto, [FromQuery] Guid doctorReceiveId, Guid childId)
+        public async Task<IActionResult> SendRequest([FromBody] ConsultationRequestCreateDto dto, [FromQuery] Guid doctorReceiveId)
         {
             _logger.LogInformation("Send doctor request received");
 
-            return await _requestService.SendRequest(dto, doctorReceiveId, childId);
+            return await _requestService.SendRequest(dto, doctorReceiveId);
         }
 
         [Protected]
