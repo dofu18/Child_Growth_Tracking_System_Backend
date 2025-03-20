@@ -37,11 +37,11 @@ namespace ControllerLayer.Controllers
 
         [Protected]
         [HttpPut("edit")]
-        public async Task<IActionResult> UpdatePackage(Guid packageId, [FromBody] PackageUpdateDto dto)
+        public async Task<IActionResult> UpdatePackage([FromBody] PackageUpdateDto dto)
         {
-            _logger.LogInformation($"Admin updating package {packageId}");
+            _logger.LogInformation($"Admin updating package {dto.PackageId}");
 
-            return await _userPackageService.UpdatePackage(packageId, dto);
+            return await _userPackageService.UpdatePackage(dto);
         }
 
         [Protected]
