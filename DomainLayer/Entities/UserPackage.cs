@@ -15,6 +15,7 @@ namespace DomainLayer.Entities
         public decimal PriceAtSubscription { get; set; }
         public DateOnly StartDate { get; set; }
         public DateOnly ExpireDate { get; set; }
+        public int MaxChildrentAllowed { get; set; }
         public UserPackageStatusEnum? Status { get; set; }
         //Navigation Properties
         public Package Package { get; set; }
