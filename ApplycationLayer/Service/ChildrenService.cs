@@ -1,4 +1,5 @@
-﻿using Application.ResponseCode;
+﻿using System.Diagnostics.Eventing.Reader;
+using Application.ResponseCode;
 using ApplicationLayer.DTOs.Children;
 using ApplicationLayer.DTOs.Childrens;
 using AutoMapper;
@@ -326,16 +327,16 @@ namespace ApplicationLayer.Service
             }
             var userId = payload.UserId;
 
-            var myChild = await _childrenRepo.WhereAsync(c => c.ParentId == userId && c.Status == ChildrentStatusEnum.Archived && c.Id == childId);
-            if (myChild.Count() == 0)
+            var myChild = (await _childrenRepo.WhereAsync(c => c.ParentId == userId && c.Status == ChildrentStatusEnum.Archived && c.Id == childId)).FirstOrDefault();
+            if (myChild == null)
             {
                 return ErrorResp.NotFound("This child not found or child is not in Archived list");
             }
 
-            var child = await _childrenRepo.FoundOrThrowAsync(childId);
+            //var child = await _childrenRepo.FoundOrThrowAsync(childId);
 
-            child.Status = ChildrentStatusEnum.Active;
-            await _childrenRepo.UpdateAsync(child);
+            myChild.Status = ChildrentStatusEnum.Active;
+            await _childrenRepo.UpdateAsync(myChild);
 
             return SuccessResp.Ok("Un-archive child successfully");
         }

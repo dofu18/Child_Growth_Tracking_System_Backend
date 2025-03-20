@@ -3,6 +3,7 @@ using System;
 using InfrastructureLayer.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace InfrastructureLayer.Migrations
 {
     [DbContext(typeof(ChildGrowthDbContext))]
-    partial class ChildGrowthDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250320145653_WhoData")]
+    partial class WhoData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -222,6 +225,9 @@ namespace InfrastructureLayer.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<Guid>("ChildrentId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -256,6 +262,8 @@ namespace InfrastructureLayer.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ChildrentId");
 
                     b.HasIndex("DoctorReceiveId");
 
@@ -890,6 +898,12 @@ namespace InfrastructureLayer.Migrations
 
             modelBuilder.Entity("DomainLayer.Entities.ConsultationRequest", b =>
                 {
+                    b.HasOne("DomainLayer.Entities.Children", "Children")
+                        .WithMany()
+                        .HasForeignKey("ChildrentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("DomainLayer.Entities.User", "DoctorReceive")
                         .WithMany()
                         .HasForeignKey("DoctorReceiveId")
@@ -901,6 +915,8 @@ namespace InfrastructureLayer.Migrations
                         .HasForeignKey("UserRequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Children");
 
                     b.Navigation("DoctorReceive");
 

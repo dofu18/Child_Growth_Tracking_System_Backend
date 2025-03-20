@@ -9,7 +9,6 @@ namespace DomainLayer.Entities
 {
     public class ConsultationRequest : BaseEntity
     {
-        public Guid ChildrentId { get; set; }
         public DateTime RequestDate { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
@@ -21,7 +20,5 @@ namespace DomainLayer.Entities
         //Navigation Properties
         public User DoctorReceive { get; set; }
         public User UserRequest { get; set; }
-        public Children Children { get; set; }
-
     }
 }

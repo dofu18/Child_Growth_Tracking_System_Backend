@@ -21,13 +21,6 @@ namespace ControllerLayer.Controllers
             _logger = logger;
         }
 
-        [HttpPost("calculate")]
-        public async Task<IActionResult> CalculateBmi([FromBody] CalculateBmiRequestDto request)
-        {
-            var result = await _bmiService.CalculateBmiAsync(request);
-            return Ok(result);
-        }
-
         [Protected]
         [HttpPost("save")]
         public async Task<IActionResult> SaveGrowthRecord([FromBody] SaveGrowthRecordRequestDto request)
@@ -38,9 +31,9 @@ namespace ControllerLayer.Controllers
 
         [Protected]
         [HttpGet("tracking")]
-        public async Task<IActionResult> GrowthTracking([FromQuery] Guid childId)
+        public async Task<IActionResult> GrowthTracking([FromQuery] Guid childId, DateTime? startDate, DateTime? endDate)
         {
-            var result = await _growthTrackingService.GetGrowthTracking(childId);
+            var result = await _growthTrackingService.GetGrowthTracking(childId, startDate, endDate);
             return Ok(result);
         }
     }
