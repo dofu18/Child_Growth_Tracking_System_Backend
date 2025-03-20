@@ -20,7 +20,7 @@ namespace ApplicationLayer.Service
         Task<IActionResult> CreatePackage(PackageCreateDto dto);
         Task<IActionResult> RenewPackage(RenewPackageDto dto);
         Task<IActionResult> CancelMembership();
-        Task<IActionResult> UpdatePackage(Guid packageId, PackageUpdateDto dto);
+        Task<IActionResult> UpdatePackage(PackageUpdateDto dto);
         Task<IActionResult> DeletePackage(Guid packageId);
         Task<IActionResult> GetAllPackages();
     }
@@ -203,7 +203,7 @@ namespace ApplicationLayer.Service
             }
         }
 
-        public async Task<IActionResult> UpdatePackage(Guid packageId, PackageUpdateDto dto)
+        public async Task<IActionResult> UpdatePackage(PackageUpdateDto dto)
         {
             var payload = ExtractPayload();
             if (payload == null)
@@ -211,7 +211,7 @@ namespace ApplicationLayer.Service
                 return ErrorResp.Unauthorized("Invalid token");
             }
 
-            var package = await _packageRepo.FindByIdAsync(packageId);
+            var package = await _packageRepo.FindByIdAsync(dto.PackageId);
 
             if (package == null)
             {
