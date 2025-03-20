@@ -18,7 +18,7 @@ namespace ApplicationLayer.Service
 {
     public interface IConsultationRequestService
     {
-        Task<IActionResult> SendRequest(ConsultationRequestCreateDto dto, Guid doctorReceiveId, Guid childId);
+        Task<IActionResult> SendRequest(ConsultationRequestCreateDto dto, Guid doctorReceiveId);
         Task<IActionResult> UserGetMyRequest(ConsultationRequestQuery query, ConsultationRequestStatusEnum? status);
         Task<IActionResult> DoctorGetMyRequest(ConsultationRequestQuery query, ConsultationRequestStatusEnum? status);
 
@@ -88,7 +88,7 @@ namespace ApplicationLayer.Service
             return SuccessResp.Ok(result);
         }
 
-        public async Task<IActionResult> SendRequest(ConsultationRequestCreateDto dto, Guid doctorReceiveId, Guid childId)
+        public async Task<IActionResult> SendRequest(ConsultationRequestCreateDto dto, Guid doctorReceiveId)
         {
             var payload = ExtractPayload();
             if (payload == null)
@@ -98,20 +98,20 @@ namespace ApplicationLayer.Service
 
             var doctor = await _userRepo.FindByIdAsync(doctorReceiveId);
 
-            var children = await _childrenRepo.FindByIdAsync(childId);
+            //var children = await _childrenRepo.FindByIdAsync(childId);
 
-            if (childId ==  Guid.Empty || doctorReceiveId == Guid.Empty
-                || children == null || doctor == null)
-            {
-                return ErrorResp.NotFound("Doctor or Children not found");
-            }
+            //if (childId ==  Guid.Empty || doctorReceiveId == Guid.Empty
+            //    || children == null || doctor == null)
+            //{
+            //    return ErrorResp.NotFound("Doctor or Children not found");
+            //}
             var userId = payload.UserId;
 
 
-            if (children.ParentId != userId)
-            {
-                return ErrorResp.BadRequest("This child is not yours");
-            }
+            //if (children.ParentId != userId)
+            //{
+            //    return ErrorResp.BadRequest("This child is not yours");
+            //}
 
             if (doctor.RoleId != Guid.Parse(GeneralConst.ROLE_DOCTOR_GUID))
             {
@@ -121,7 +121,7 @@ namespace ApplicationLayer.Service
 
             var request = _mapper.Map<ConsultationRequest>(dto);
             request.UserRequestId = userId;
-            request.ChildrentId = childId;
+            //request.ChildrentId = childId;
             request.Status = ConsultationRequestStatusEnum.Pending;
             request.DoctorReceiveId = doctorReceiveId;
             request.CreatedAt = DateTime.UtcNow;

@@ -52,7 +52,7 @@ namespace ControllerLayer.Controllers
             var resp = await _authService.HandleGoogleLogin(redirect, state, new GgAuthInfo
             {
                 Email = email,
-                FullName = fullName ?? name,
+                FullName = name,
             });
 
             if (resp.Success && resp.RedirectLink != null)
