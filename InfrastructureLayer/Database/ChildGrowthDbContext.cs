@@ -141,7 +141,6 @@ namespace InfrastructureLayer.Database
             modelBuilder.Entity<ConsultationRequest>(e =>
             {
                 e.HasKey(x => x.Id);
-                e.HasOne(x => x.Children).WithMany().HasForeignKey(x => x.ChildrentId).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.RequestDate).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
                 e.Property(x => x.Title).IsRequired().HasMaxLength(100);
                 e.Property(x => x.Description).IsRequired(false).HasMaxLength(500);
