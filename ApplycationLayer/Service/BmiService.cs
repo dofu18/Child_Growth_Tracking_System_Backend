@@ -11,12 +11,12 @@ using System.Text;
 using System.Threading.Tasks;
 using static DomainLayer.Enum.GeneralEnum;
 using ApplicationLayer.DTOs.BMI;
+using Org.BouncyCastle.Asn1.Ocsp;
 
 namespace ApplicationLayer.Service
 {
     public interface IBmiService
     {
-        Task<CalculateBmiResponseDto> CalculateBmiAsync(CalculateBmiRequestDto request);
         Task<GrowthRecordResponseDto> SaveGrowthRecordAsync(SaveGrowthRecordRequestDto request);
     }
 
@@ -25,80 +25,43 @@ namespace ApplicationLayer.Service
         private readonly IGenericRepository<Children> _childrenRepo;
         private readonly IGenericRepository<BmiCategory> _bmiCategoryRepo;
         private readonly IGenericRepository<GrowthRecord> _growthRecordRepo;
+        private readonly IGenericRepository<WhoData> _whoDataRepo;
 
-        public BmiService(IGenericRepository<Children> childrenRepo, IGenericRepository<BmiCategory> bmiCategoryRepo, IGenericRepository<GrowthRecord> growthRecordRepo, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
+        public BmiService(IGenericRepository<Children> childrenRepo, IGenericRepository<BmiCategory> bmiCategoryRepo, IGenericRepository<GrowthRecord> growthRecordRepo, IGenericRepository<WhoData> whoDataRepo, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
         {
             _childrenRepo = childrenRepo;
             _bmiCategoryRepo = bmiCategoryRepo;
             _growthRecordRepo = growthRecordRepo;
+            _whoDataRepo = whoDataRepo;
         }
 
-        public async Task<CalculateBmiResponseDto> CalculateBmiAsync(CalculateBmiRequestDto request)
-        {
-            if (request.Height <= 0)
-                throw new ArgumentException("Height must be greater than zero.");
-
-            decimal bmi = request.Weight / ((request.Height / 100) * (request.Height / 100));
-
-            if (request.AgeInMonths <= 0)
-                throw new ArgumentException("AgeInMonths must be greater than zero.");
-
-            decimal bmiPercentile = CalculateBmiPercentile(bmi, request.AgeInMonths, request.Gender);
-            string category = await GetBmiCategoryAsync(bmi);
-
-            return new CalculateBmiResponseDto
-            {
-                Bmi = bmi,
-                BmiPercentile = bmiPercentile,
-                BmiCategory = category
-            };
-        }
-
-        // Hàm hỗ trợ tính percentile
-        private decimal CalculateBmiPercentile(decimal bmi, int ageInMonths, GenderEnum gender)
-        {
-            // Lấy dữ liệu WHO theo giới tính
-            var bmiTable = gender == GenderEnum.Male ? DataWHO.WHO_BMI_TABLE_MALE : DataWHO.WHO_BMI_TABLE_FEMALE;
-
-
-            // Tìm tuổi gần nhất
-            if (!bmiTable.ContainsKey(ageInMonths))
-                return 50; // Nếu không tìm thấy dữ liệu, trả về trung bình
-
-            var percentiles = bmiTable[ageInMonths];
-
-            // So sánh BMI để tìm percentile phù hợp
-            if (bmi < percentiles[5]) return 5;
-            if (bmi < percentiles[10] && bmi >= percentiles[5]) return 10;
-            if (bmi < percentiles[25] && bmi >= percentiles[10]) return 25;
-            if (bmi < percentiles[50] && bmi >= percentiles[25]) return 50;
-            if (bmi < percentiles[75] && bmi >= percentiles[50]) return 75;
-            if (bmi < percentiles[85] && bmi >= percentiles[75]) return 85;
-            if (bmi < percentiles[95] && bmi >= percentiles[85]) return 95;
-            return 99;
-        }
-
-        // Lấy danh mục BMI
-        private async Task<string> GetBmiCategoryAsync(decimal bmi)
-        {
-            var category = await _bmiCategoryRepo.FirstOrDefaultAsync(c => c.BmiBottom <= bmi && c.BmiTop >= bmi);
-            return category?.Name ?? "Unknown";
-        }
-
-        // Lưu vào GrowthRecord và cập nhật Children
         public async Task<GrowthRecordResponseDto> SaveGrowthRecordAsync(SaveGrowthRecordRequestDto request)
         {
             var payload = ExtractPayload();
             if (payload == null) throw new UnauthorizedAccessException("Invalid token");
 
+            //Lấy thông tin trẻ em
             var child = await _childrenRepo.FoundOrThrowAsync(request.ChildId, "Child not found");
 
-            decimal bmi = request.Weight / (request.Height / 100 * request.Height / 100);
-            decimal bmiPercentile = CalculateBmiPercentile(bmi, request.AgeInMonths, request.Gender);
-            string category = await GetBmiCategoryAsync(bmi);
+            // Tính AgeInMonths từ DoB của trẻ trong bảng Children
+            int ageInMonths = ((DateTime.UtcNow.Year - child.DoB.Year) * 12) + (DateTime.UtcNow.Month - child.DoB.Month);
+            if (ageInMonths < 0) throw new Exception("Invalid Date of Birth");
 
+            //Tính BMI
+            decimal bmi = Math.Round(request.Weight / ((request.Height / 100) * (request.Height / 100)), 2);
+
+            // Lấy BMI Percentile từ bảng WhoData
+            var whoDataList = await _whoDataRepo.WhereAsync(w => w.AgeMonth == ageInMonths && w.Gender == request.Gender);
+            var whoData = whoDataList.OrderBy(w => Math.Abs(w.Bmi - bmi)).FirstOrDefault();
+
+            if (whoData == null) throw new Exception("BMI Percentile data not found");
+
+            decimal bmiPercentile = whoData.BmiPercentile;
+
+            //Xác định BMI Category
             var bmiCategory = await _bmiCategoryRepo.FirstOrDefaultAsync(c => c.BmiBottom <= bmi && c.BmiTop >= bmi);
             if (bmiCategory == null) throw new Exception("BMI Category not found");
+
 
             // Lưu vào bảng GrowthRecord
             var record = new GrowthRecord
@@ -132,7 +95,7 @@ namespace ApplicationLayer.Service
                 Weight = record.Weight,
                 Bmi = record.Bmi,
                 BmiPercentile = record.BmiPercentile,
-                BmiCategory = category,
+                BmiCategory = bmiCategory.Name,
                 Notes = record.Notes
             };
         }
