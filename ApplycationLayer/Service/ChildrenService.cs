@@ -34,15 +34,19 @@ namespace ApplicationLayer.Service
         private readonly IGenericRepository<BmiCategory> _bmiCategoryRepo;
         private readonly IGenericRepository<User> _userRepo;
         private readonly IGenericRepository<SharingProfile> _sharingRepo;
+        private readonly IGenericRepository<UserPackage> _userPackageRepo;
+        private readonly IGenericRepository<Package> _packageRepo;
 
 
 
-        public ChildrenService(IGenericRepository<Children> childrenRepo, IGenericRepository<User> userRepo, IGenericRepository<SharingProfile> sharingRepo, IGenericRepository<BmiCategory> bmiCategoryRepo, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
+        public ChildrenService(IGenericRepository<Children> childrenRepo, IGenericRepository<User> userRepo, IGenericRepository<SharingProfile> sharingRepo, IGenericRepository<BmiCategory> bmiCategoryRepo, IGenericRepository<UserPackage>userPackageRepo, IGenericRepository<Package> packageRepo, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
         {
             _childrenRepo = childrenRepo;
             _userRepo = userRepo;
             _sharingRepo = sharingRepo;
             _bmiCategoryRepo = bmiCategoryRepo;
+            _userPackageRepo = userPackageRepo;
+            _packageRepo = packageRepo;
         }
 
         public async Task<IActionResult> Create(ChildrenCreateDto dto)
@@ -54,69 +58,53 @@ namespace ApplicationLayer.Service
             }
             var userId = payload.UserId;
 
-            if (dto == null)
+            // Lấy thông tin user từ database
+            var user = await _userRepo.FindByIdAsync(userId);
+            if (user == null)
             {
-                return ErrorResp.BadRequest("Dữ liệu không hợp lệ.");
+                return ErrorResp.BadRequest("User not found.");
             }
 
-            if (dto.DoB >= DateOnly.FromDateTime(DateTime.UtcNow))
+            // Kiểm tra trạng thái của user
+            if (user.Status == UserStatusEnum.Disable || user.Status == UserStatusEnum.Archived || user.Status == UserStatusEnum.NotVerified)
             {
-                return ErrorResp.BadRequest("Date of birth must be in the past.");
+                return ErrorResp.Forbidden("Your account status does not allow adding children.");
             }
 
-            var child = _mapper.Map<Children>(dto);
+            // Lấy gói đăng ký hiện tại của user (nếu có)
+            var activePackage = await _userPackageRepo.FirstOrDefaultAsync(up => up.OwnerId == userId && up.Status == UserPackageStatusEnum.OnGoing);
 
-            if (dto.Height <= 0 || dto.Weight <= 0)
+            // Nếu không có gói nào hoặc gói đã hết hạn, set max = 1
+            int maxChildrenAllowed = 1;
+            if (activePackage != null)
             {
-                child.Bmi = 0;
-                child.BmiPercentile = 0;
+                var package = await _packageRepo.FindByIdAsync(activePackage.PackageId);
+                if (package != null)
+                {
+                    maxChildrenAllowed = package.MaxChildrentAllowed;
+                }
+            }
 
-                // Gán vào danh mục "No Information"
-                var noInfoCategory = await _bmiCategoryRepo.FirstOrDefaultAsync(c => c.Name == "No Information");
-                if (noInfoCategory != null)
-                {
-                    child.BmiCategoryId = noInfoCategory.Id;
-                }
-                else
-                {
-                    throw new Exception("Không tìm thấy danh mục BMI 'No Information'.");
-                }
+            // Kiểm tra số lượng trẻ hiện tại của user - sử dụng Count
+            int currentChildrenCount = await _childrenRepo.CountAsync(c => c.ParentId == userId);
+
+
+            // Kiểm tra nếu user còn slot để tạo con mới
+            if (currentChildrenCount < maxChildrenAllowed)
+            {
+                // Tạo mới trẻ em
+                var child = _mapper.Map<Children>(dto);
+                child.ParentId = userId;
+                child.Status = ChildrentStatusEnum.Active;
+                child.CreatedAt = DateTime.UtcNow;
+
+                await _childrenRepo.CreateAsync(child);
+                return SuccessResp.Created("Children information added successfully");
             }
             else
             {
-                child.Bmi = dto.Weight / ((dto.Height / 100) * (dto.Height / 100));
-
-                // Tìm danh mục BMI
-                var bmiCategory = await _bmiCategoryRepo.FirstOrDefaultAsync(c => child.Bmi >= c.BmiBottom && child.Bmi <= c.BmiTop);
-                if (bmiCategory == null)
-                {
-                    var noInfoCategory = await _bmiCategoryRepo.FirstOrDefaultAsync(c => c.Name == "No Information");
-                    child.BmiCategoryId = noInfoCategory.Id;
-                }
-                else
-                {
-                    child.BmiCategoryId = bmiCategory.Id;
-                }
-
-                // Tính BMI Percentile
-                if (child.Bmi < 14.0m)
-                    child.BmiPercentile = 5;
-                else if (child.Bmi < 15.8m)
-                    child.BmiPercentile = 50;
-                else if (child.Bmi < 17.0m)
-                    child.BmiPercentile = 85;
-                else if (child.Bmi < 18.0m)
-                    child.BmiPercentile = 95;
-                else
-                    child.BmiPercentile = 100;
+                return ErrorResp.BadRequest("You have reached the maximum number of children allowed.");
             }
-
-            child.ParentId = userId;
-            child.Status = ChildrentStatusEnum.Active;
-            child.CreatedAt = DateTime.UtcNow;
-
-            await _childrenRepo.CreateAsync(child);
-            return SuccessResp.Created("Children information added successfully");
         }
 
 

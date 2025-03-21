@@ -12,7 +12,6 @@ namespace ApplicationLayer.DTOs.GrowthRecord
         public Guid ChildId { get; set; }
         public decimal Height { get; set; } // cm
         public decimal Weight { get; set; } // kg
-        public int AgeInMonths { get; set; }
         public GenderEnum Gender { get; set; }
         public string Notes { get; set; }
     }
