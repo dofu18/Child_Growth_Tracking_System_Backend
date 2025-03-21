@@ -26,19 +26,34 @@ namespace ApplicationLayer.Service
         private readonly IGenericRepository<BmiCategory> _bmiCategoryRepo;
         private readonly IGenericRepository<GrowthRecord> _growthRecordRepo;
         private readonly IGenericRepository<WhoData> _whoDataRepo;
+        private readonly IGenericRepository<User> _userRepo;
 
-        public BmiService(IGenericRepository<Children> childrenRepo, IGenericRepository<BmiCategory> bmiCategoryRepo, IGenericRepository<GrowthRecord> growthRecordRepo, IGenericRepository<WhoData> whoDataRepo, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
+        public BmiService(IGenericRepository<Children> childrenRepo, IGenericRepository<BmiCategory> bmiCategoryRepo, IGenericRepository<GrowthRecord> growthRecordRepo, IGenericRepository<WhoData> whoDataRepo, IGenericRepository<User> userRepo, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
         {
             _childrenRepo = childrenRepo;
             _bmiCategoryRepo = bmiCategoryRepo;
             _growthRecordRepo = growthRecordRepo;
             _whoDataRepo = whoDataRepo;
+            _userRepo = userRepo;
         }
 
         public async Task<GrowthRecordResponseDto> SaveGrowthRecordAsync(SaveGrowthRecordRequestDto request)
         {
             var payload = ExtractPayload();
             if (payload == null) throw new UnauthorizedAccessException("Invalid token");
+
+            // Lấy thông tin user từ database
+            var user = await _userRepo.FindByIdAsync(payload.UserId);
+            if (user == null)
+            {
+                throw new UnauthorizedAccessException("User not found.");
+            }
+
+            // Kiểm tra trạng thái của user
+            if (user.Status == UserStatusEnum.Disable || user.Status == UserStatusEnum.Archived || user.Status == UserStatusEnum.NotVerified)
+            {
+                throw new UnauthorizedAccessException("Your account status does not allow updating growth records.");
+            }
 
             //Lấy thông tin trẻ em
             var child = await _childrenRepo.FoundOrThrowAsync(request.ChildId, "Child not found");
