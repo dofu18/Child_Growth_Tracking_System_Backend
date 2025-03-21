@@ -58,6 +58,19 @@ namespace ApplicationLayer.Service
             }
             var userId = payload.UserId;
 
+            // Lấy thông tin user từ database
+            var user = await _userRepo.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return ErrorResp.BadRequest("User not found.");
+            }
+
+            // Kiểm tra trạng thái của user
+            if (user.Status == UserStatusEnum.Disable || user.Status == UserStatusEnum.Archived || user.Status == UserStatusEnum.NotVerified)
+            {
+                return ErrorResp.Forbidden("Your account status does not allow adding children.");
+            }
+
             // Lấy gói đăng ký hiện tại của user (nếu có)
             var activePackage = await _userPackageRepo.FirstOrDefaultAsync(up => up.OwnerId == userId && up.Status == UserPackageStatusEnum.OnGoing);
 
