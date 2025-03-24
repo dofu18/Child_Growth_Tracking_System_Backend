@@ -58,8 +58,13 @@ namespace ApplicationLayer.Service
             //Lấy thông tin trẻ em
             var child = await _childrenRepo.FoundOrThrowAsync(request.ChildId, "Child not found");
 
-            // Tính AgeInMonths từ DoB của trẻ trong bảng Children
-            int ageInMonths = ((DateTime.UtcNow.Year - child.DoB.Year) * 12) + (DateTime.UtcNow.Month - child.DoB.Month);
+            // Tính số tháng tuổi từ DoB của request
+            DateTime dob = request.DoB.ToDateTime(TimeOnly.MinValue);
+            DateTime today = DateTime.UtcNow;
+
+            int ageInMonths = (today.Year - dob.Year) * 12 + (today.Month - dob.Month);
+            if (today.Day < dob.Day) ageInMonths--; // Giảm 1 tháng nếu chưa đến ngày sinh
+
             if (ageInMonths < 0) throw new Exception("Invalid Date of Birth");
 
             //Tính BMI

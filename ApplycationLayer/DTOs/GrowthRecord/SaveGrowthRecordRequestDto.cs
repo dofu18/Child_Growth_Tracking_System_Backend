@@ -10,6 +10,7 @@ namespace ApplicationLayer.DTOs.GrowthRecord
     public class SaveGrowthRecordRequestDto
     {
         public Guid ChildId { get; set; }
+        public DateOnly DoB { get; set; }
         public decimal Height { get; set; } // cm
         public decimal Weight { get; set; } // kg
         public GenderEnum Gender { get; set; }
