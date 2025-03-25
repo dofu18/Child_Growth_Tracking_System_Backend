@@ -58,14 +58,43 @@ namespace ApplicationLayer.Service
             //Lấy thông tin trẻ em
             var child = await _childrenRepo.FoundOrThrowAsync(request.ChildId, "Child not found");
 
-            // Tính số tháng tuổi từ DoB của request
+            // Chuyển đổi DateOnly thành DateTime
             DateTime dob = request.DoB.ToDateTime(TimeOnly.MinValue);
             DateTime today = DateTime.UtcNow;
 
+            // Kiểm tra nếu DoB nhập vào nhỏ hơn ngày sinh của trẻ
+            if (dob < child.DoB.ToDateTime(TimeOnly.MinValue))
+            {
+                throw new Exception("Invalid Date of Birth: The entered DoB cannot be earlier than the child's actual birth date.");
+            }
+
+            // Tính số tháng tuổi
             int ageInMonths = (today.Year - dob.Year) * 12 + (today.Month - dob.Month);
             if (today.Day < dob.Day) ageInMonths--; // Giảm 1 tháng nếu chưa đến ngày sinh
 
-            if (ageInMonths < 0) throw new Exception("Invalid Date of Birth");
+            // Kiểm tra nếu tuổi nhỏ hơn 0 hoặc lớn hơn 216 tháng (19 tuổi)
+            if (ageInMonths < 0 || ageInMonths > 216)
+            {
+                throw new Exception("Invalid Age: BMI data is only available for ages between 0 and 19 years (0-216 months).");
+            }
+
+            // Kiểm tra chiều cao và cân nặng có hợp lệ không
+            if (request.Height <= 0 || request.Weight <= 0)
+            {
+                throw new Exception("Invalid input: Height and weight must be greater than zero.");
+            }
+
+            // Kiểm tra chiều cao có thực tế không
+            if (request.Height < 30 || request.Height > 250)
+            {
+                throw new Exception("Invalid height: Height must be between 30cm and 250cm.");
+            }
+
+            // Kiểm tra cân nặng có thực tế không
+            if (request.Weight < 1 || request.Weight > 300)
+            {
+                throw new Exception("Invalid weight: Weight must be between 1kg and 300kg.");
+            }
 
             //Tính BMI
             decimal bmi = Math.Round(request.Weight / ((request.Height / 100) * (request.Height / 100)), 2);
@@ -80,6 +109,7 @@ namespace ApplicationLayer.Service
 
             //Xác định BMI Category
             var bmiCategory = await _bmiCategoryRepo.FirstOrDefaultAsync(c => c.BmiBottom <= bmi && c.BmiTop >= bmi);
+
             if (bmiCategory == null) throw new Exception("BMI Category not found");
 
 
