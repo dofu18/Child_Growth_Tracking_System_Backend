@@ -52,10 +52,10 @@ namespace ControllerLayer.Controllers
 
                     if (response.Success)
                     {
-                        return Ok(response);
+                        return Redirect("http://localhost:5173/successful");
                     }
 
-                    return BadRequest(response);
+                    return Redirect("http://localhost:5173/failed");
                 }
                 catch (Exception ex)
                 {

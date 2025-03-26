@@ -241,6 +241,30 @@ namespace ApplicationLayer.Service
                 return ErrorResp.NotFound("Package not found");
             }
 
+            // Lấy danh sách người dùng đang sử dụng package này
+            var activeUsers = await _userPackageRepo.FindAllAsync(up => up.PackageId == packageId && up.Status == UserPackageStatusEnum.OnGoing,"Owner");
+
+            if (activeUsers.Any())
+            {
+                var userList = activeUsers.Select(up => new
+                {
+                    up.Owner.Id,
+                    up.Owner.UserName,
+                    up.Owner.Email
+                }).ToList();
+
+                return new JsonResult(new
+                {
+                    Message = "Cannot delete package because it is currently in use.",
+                    ActiveUserCount = userList.Count(),
+                    ActiveUsers = userList
+                })
+                {
+                    StatusCode = 400
+                };
+            }
+
+            // Xóa package (soft delete)
             package.Status = GeneralEnum.PackageStatusEnum.Deleted;
             package.UpdatedAt = DateTime.Now;
 
