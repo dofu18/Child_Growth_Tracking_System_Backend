@@ -58,7 +58,7 @@ namespace ApplicationLayer.Mapper
 
             //Package
             CreateMap<Package, PackageCreateDto>().ReverseMap();
-            CreateMap<Package, RenewPackageDto>().ReverseMap();
+            CreateMap<Package, RenewPackageDto>();
             CreateMap<Package, PackageUpdateDto>().ReverseMap();
             CreateMap<Package, PackageDto>();
 

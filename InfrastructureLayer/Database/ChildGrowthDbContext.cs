@@ -28,6 +28,7 @@ namespace InfrastructureLayer.Database
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<UserPackage> UserPackages { get; set; }
+        public DbSet<WhoData> WhoData { get; set; }
 
         public ChildGrowthDbContext(DbContextOptions<ChildGrowthDbContext> options) : base(options) { }
 
@@ -49,6 +50,16 @@ namespace InfrastructureLayer.Database
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<WhoData>(e =>
+            {
+                e.HasKey(x => x.Id);
+                e.Property(x => x.AgeMonth).IsRequired();
+                e.Property(x => x.BmiPercentile).IsRequired();
+                e.Property(x => x.Bmi).IsRequired();
+                e.Property(x => x.Gender).HasConversion<string>().HasDefaultValue(GenderEnum.Male);
+                e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
+                e.Property(x => x.UpdatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
+            });
             modelBuilder.Entity<Alert>(e =>
             {
                 e.HasKey(x => x.Id);
@@ -130,7 +141,6 @@ namespace InfrastructureLayer.Database
             modelBuilder.Entity<ConsultationRequest>(e =>
             {
                 e.HasKey(x => x.Id);
-                e.HasOne(x => x.Children).WithMany().HasForeignKey(x => x.ChildrentId).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.RequestDate).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
                 e.Property(x => x.Title).IsRequired().HasMaxLength(100);
                 e.Property(x => x.Description).IsRequired(false).HasMaxLength(500);
@@ -290,6 +300,7 @@ namespace InfrastructureLayer.Database
                 e.HasOne(x => x.Owner).WithMany().HasForeignKey(x => x.OwnerId).OnDelete(DeleteBehavior.Cascade);
                 e.HasOne(x => x.Package).WithMany().HasForeignKey(x => x.PackageId).OnDelete(DeleteBehavior.Cascade);
                 e.Property(x => x.PriceAtSubscription).IsRequired();
+                e.Property(x => x.MaxChildrentAllowed).IsRequired();
                 e.Property(x => x.Status).HasConversion<string>().HasDefaultValue(UserPackageStatusEnum.OnGoing);
                 e.Property(x => x.StartDate).IsRequired().HasDefaultValueSql("CURRENT_DATE");
                 e.Property(x => x.ExpireDate).IsRequired().HasDefaultValueSql("CURRENT_DATE");
