@@ -75,8 +75,7 @@ namespace ApplicationLayer.Service
                 throw new Exception("Package not found");
 
             // Kiểm tra user đã mua gói này chưa và còn hạn không
-            var existingUserPackage = await _userPackageRepository.FirstOrDefaultAsync(up =>
-                up.OwnerId == userId && up.PackageId == request.PackageId);
+            var existingUserPackage = await _userPackageRepository.FirstOrDefaultAsync(up => up.OwnerId == userId && up.PackageId == request.PackageId && up.Status == UserPackageStatusEnum.OnGoing);
 
             if (existingUserPackage != null && existingUserPackage.ExpireDate >= DateOnly.FromDateTime(DateTime.UtcNow))
             {
