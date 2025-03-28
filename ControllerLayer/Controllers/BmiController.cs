@@ -25,7 +25,7 @@ namespace ControllerLayer.Controllers
         [HttpPost("save")]
         public async Task<IActionResult> SaveGrowthRecord([FromBody] SaveGrowthRecordRequestDto request)
         {
-            var result = await _bmiService.SaveGrowthRecordAsync(request);
+            var result = await _bmiService.SaveGrowthRecord(request);
             return Ok(result);
         }
 
@@ -34,6 +34,14 @@ namespace ControllerLayer.Controllers
         public async Task<IActionResult> GrowthTracking([FromQuery] Guid childId, DateTime? startDate, DateTime? endDate)
         {
             var result = await _growthTrackingService.GetGrowthTracking(childId, startDate, endDate);
+            return Ok(result);
+        }
+
+        [Protected]
+        [HttpPost("edit")]
+        public async Task<IActionResult> EditGrowthRecord(Guid recordId, [FromBody] SaveGrowthRecordRequestDto request)
+        {
+            var result = await _bmiService.EditGrowthRecord(recordId, request);
             return Ok(result);
         }
     }
