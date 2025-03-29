@@ -317,12 +317,19 @@ namespace ApplicationLayer.Service
                     OwnerId = g.Key.OwnerId,
                     TotalPackages = g.Count(),
                     ActivePackages = g.Count(up => up.ExpireDate >= today),
-                    ExpiredPackages = g.Count(up => up.ExpireDate < today)
+                    ExpiredPackages = g.Count(up => up.ExpireDate < today),
+                    TotalRevenuePerPackage = g.Sum(up => up.PriceAtSubscription)
                 })
                 .OrderBy(g => g.OwnerId)
                 .ToList();
 
-            return SuccessResp.Ok(summary);
+            var totalRevenueAllPackages = summary.Sum(x => x.TotalRevenuePerPackage);
+
+            return SuccessResp.Ok(new
+            {
+                PackagesSummary = summary,
+                TotalRevenueAllPackages = totalRevenueAllPackages
+            });
         }
     }
 }
