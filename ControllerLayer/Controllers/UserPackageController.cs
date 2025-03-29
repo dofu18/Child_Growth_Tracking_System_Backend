@@ -61,5 +61,12 @@ namespace ControllerLayer.Controllers
             return await _userPackageService.GetAllPackages();
         }
 
+        [Protected]
+        [HttpGet("admin/packages-summary")]
+        public async Task<IActionResult> GetNumberUsingPackage()
+        {
+            _logger.LogInformation("Get package summary");
+            return await _userPackageService.GetNumberUsingPackage();
+        }
     }
 }

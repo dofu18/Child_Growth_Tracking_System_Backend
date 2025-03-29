@@ -23,6 +23,8 @@ namespace ApplicationLayer.Service
         Task<IActionResult> UpdatePackage(PackageUpdateDto dto);
         Task<IActionResult> DeletePackage(Guid packageId);
         Task<IActionResult> GetAllPackages();
+        //admin
+        Task<IActionResult> GetNumberUsingPackage();
     }
     public class UserPackageService : BaseService, IUserPackageService
     {
@@ -295,5 +297,32 @@ namespace ApplicationLayer.Service
             }
         }
 
+        public async Task<IActionResult> GetNumberUsingPackage()
+        {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+            var userPackages = await _userPackageRepo.ListAsync();
+
+            var summary = userPackages
+                .GroupBy(up => new { up.PackageId, up.OwnerId })
+                .Select(g => new
+                {
+                    PackageId = g.Key.PackageId,
+                    OwnerId = g.Key.OwnerId,
+                    TotalPackages = g.Count(),
+                    ActivePackages = g.Count(up => up.ExpireDate >= today),
+                    ExpiredPackages = g.Count(up => up.ExpireDate < today)
+                })
+                .OrderBy(g => g.OwnerId)
+                .ToList();
+
+            return SuccessResp.Ok(summary);
+        }
     }
 }
