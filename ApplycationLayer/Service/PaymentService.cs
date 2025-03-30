@@ -76,8 +76,7 @@ namespace ApplicationLayer.Service
 
             // Kiểm tra user đã mua gói này chưa và còn hạn không
             var existingUserPackage = await _userPackageRepository.FirstOrDefaultAsync(
-                            up => up.OwnerId == userId 
-                               && up.PackageId == request.PackageId 
+                            up => up.OwnerId == userId
                                && up.Status == UserPackageStatusEnum.OnGoing 
                                && up.ExpireDate >= DateOnly.FromDateTime(DateTime.UtcNow));
 
