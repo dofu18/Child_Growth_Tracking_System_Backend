@@ -29,15 +29,17 @@ namespace ApplicationLayer.Service
         private readonly IGenericRepository<User> _userRepo;
         private readonly IGenericRepository<Children> _childrenRepo;
         private readonly IGenericRepository<Role> _roleRepo;
+        private readonly IGenericRepository<UserPackage> _userPackageRepo;
 
         public ConsultationRequestService(IGenericRepository<ConsultationRequest> requestRepo, IGenericRepository<Role> roleRepo 
-            , IGenericRepository<User> userRepo, IGenericRepository<Children> childRepo,
-            IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
+            , IGenericRepository<User> userRepo, IGenericRepository<Children> childRepo, 
+            IMapper mapper, IHttpContextAccessor httpCtx, IGenericRepository<UserPackage> userPackageRepo) : base(mapper, httpCtx)
         {
             _requestRepo = requestRepo;
             _userRepo = userRepo;
             _childrenRepo = childRepo;
             _roleRepo = roleRepo;
+            _userPackageRepo = userPackageRepo;
         }
 
         public async Task<IActionResult> UserGetMyRequest(ConsultationRequestQuery query, ConsultationRequestStatusEnum? status)
@@ -98,6 +100,7 @@ namespace ApplicationLayer.Service
 
             var doctor = await _userRepo.FindByIdAsync(doctorReceiveId);
 
+
             //var children = await _childrenRepo.FindByIdAsync(childId);
 
             //if (childId ==  Guid.Empty || doctorReceiveId == Guid.Empty
@@ -106,7 +109,11 @@ namespace ApplicationLayer.Service
             //    return ErrorResp.NotFound("Doctor or Children not found");
             //}
             var userId = payload.UserId;
-
+            var existPackage = await _userPackageRepo.WhereAsync(u => u.OwnerId.Equals(userId) && u.ExpireDate >= DateOnly.FromDateTime(DateTime.UtcNow));
+            if (existPackage == null)
+            {
+                return ErrorResp.BadRequest("You need to upgrade your plan to use these access!");
+            }
 
             //if (children.ParentId != userId)
             //{
