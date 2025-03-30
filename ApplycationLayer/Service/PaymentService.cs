@@ -75,9 +75,13 @@ namespace ApplicationLayer.Service
                 throw new Exception("Package not found");
 
             // Kiểm tra user đã mua gói này chưa và còn hạn không
-            var existingUserPackage = await _userPackageRepository.FirstOrDefaultAsync(up => up.OwnerId == userId && up.PackageId == request.PackageId && up.Status == UserPackageStatusEnum.OnGoing);
+            var existingUserPackage = await _userPackageRepository.FirstOrDefaultAsync(
+                            up => up.OwnerId == userId 
+                               && up.PackageId == request.PackageId 
+                               && up.Status == UserPackageStatusEnum.OnGoing 
+                               && up.ExpireDate >= DateOnly.FromDateTime(DateTime.UtcNow));
 
-            if (existingUserPackage != null && existingUserPackage.ExpireDate >= DateOnly.FromDateTime(DateTime.UtcNow))
+            if (existingUserPackage != null)
             {
                 return "Bạn đã mua gói này và gói vẫn còn hiệu lực. Không thể mua lại";
             }
@@ -196,7 +200,8 @@ namespace ApplicationLayer.Service
                     OwnerId = transaction.UserId,
                     PriceAtSubscription = transaction.Amount,
                     StartDate = DateOnly.FromDateTime(DateTime.UtcNow),
-                    Status = UserPackageStatusEnum.OnGoing
+                    Status = UserPackageStatusEnum.OnGoing,
+                    MaxChildrentAllowed = package.MaxChildrentAllowed
                 };
 
                 // Xác định thời gian gia hạn dựa trên BillingCycleEnum
