@@ -18,4 +18,10 @@ namespace ApplicationLayer.DTOs.Package
         public PackageStatusEnum? Status { get; set; }
         public DateTime CreatedAt { get; set; }
     }
+
+    public class PackageRespDto
+    {
+        public Guid Id { get; set; }
+        public string PackageName { get; set; }
+    }
 }
