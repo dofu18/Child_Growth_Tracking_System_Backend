@@ -1,6 +1,7 @@
 ﻿using Application.ResponseCode;
 using ApplicationLayer.DTOs.Package;
 using ApplicationLayer.DTOs.Payments;
+using ApplicationLayer.DTOs.Users;
 using AutoMapper;
 using DomainLayer.Entities;
 using DomainLayer.Enum;
@@ -23,6 +24,8 @@ namespace ApplicationLayer.Service
         Task<IActionResult> UpdatePackage(PackageUpdateDto dto);
         Task<IActionResult> DeletePackage(Guid packageId);
         Task<IActionResult> GetAllPackages();
+        //admin
+        Task<IActionResult> GetNumberUsingPackage();
     }
     public class UserPackageService : BaseService, IUserPackageService
     {
@@ -295,5 +298,47 @@ namespace ApplicationLayer.Service
             }
         }
 
+        public async Task<IActionResult> GetNumberUsingPackage()
+        {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+            var userPackages = await _userPackageRepo.ListAsync("Owner", "Package");
+
+            var summary = userPackages
+                .GroupBy(up => new { up.PackageId, up.OwnerId })
+                .Select(g => new
+                {
+                    Packages = new PackageRespDto
+                    {
+                        Id = g.First().Package.Id,
+                        PackageName = g.First().Package.PackageName
+                    },
+                    Owner = new UserRespDto
+                    {
+                        Id = g.First().Owner.Id,
+                        Name = g.First().Owner.Name
+                    },
+                    TotalPackages = g.Count(),
+                    ActivePackages = g.Count(up => up.ExpireDate >= today),
+                    ExpiredPackages = g.Count(up => up.ExpireDate < today),
+                    TotalRevenuePerPackage = g.Sum(up => up.PriceAtSubscription)
+                })
+                .OrderBy(g => g.Owner.Id)
+                .ToList();
+
+            var totalRevenueAllPackages = summary.Sum(x => x.TotalRevenuePerPackage);
+
+            return SuccessResp.Ok(new
+            {
+                PackagesSummary = summary,
+                TotalRevenueAllPackages = totalRevenueAllPackages
+            });
+        }
     }
 }
