@@ -4,6 +4,7 @@ using ApplicationLayer.Service;
 using DomainLayer.Entities;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using static DomainLayer.Enum.GeneralEnum;
 
 namespace ControllerLayer.Controllers
 {
@@ -62,11 +63,27 @@ namespace ControllerLayer.Controllers
         }
 
         [Protected]
+        [HttpGet("getUserPackage")]
+        public async Task<IActionResult> GetUserPackage()
+        {
+            _logger.LogInformation("Fetching all packages");
+            return await _userPackageService.GetUserPackageByToken();
+        }
+
+        [Protected]
         [HttpGet("admin/packages-summary")]
         public async Task<IActionResult> GetNumberUsingPackage()
         {
             _logger.LogInformation("Get package summary");
             return await _userPackageService.GetNumberUsingPackage();
+        }
+
+        [Protected]
+        [HttpPut("update-status")]
+        public async Task<IActionResult> UpdateStatus(Guid packageId, [FromBody] PackageStatusEnum newStatus)
+        {
+            _logger.LogInformation("Fetching all packages");
+            return await _userPackageService.UpdatePackageStatus(packageId, newStatus);
         }
     }
 }

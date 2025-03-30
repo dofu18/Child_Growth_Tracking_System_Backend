@@ -200,7 +200,8 @@ namespace ApplicationLayer.Service
                     OwnerId = transaction.UserId,
                     PriceAtSubscription = transaction.Amount,
                     StartDate = DateOnly.FromDateTime(DateTime.UtcNow),
-                    Status = UserPackageStatusEnum.OnGoing
+                    Status = UserPackageStatusEnum.OnGoing,
+                    MaxChildrentAllowed = package.MaxChildrentAllowed
                 };
 
                 // Xác định thời gian gia hạn dựa trên BillingCycleEnum

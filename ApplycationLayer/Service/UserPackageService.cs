@@ -24,8 +24,10 @@ namespace ApplicationLayer.Service
         Task<IActionResult> UpdatePackage(PackageUpdateDto dto);
         Task<IActionResult> DeletePackage(Guid packageId);
         Task<IActionResult> GetAllPackages();
+        Task<IActionResult> GetUserPackageByToken();
         //admin
         Task<IActionResult> GetNumberUsingPackage();
+        Task<IActionResult> UpdatePackageStatus(Guid packageId, [FromBody] PackageStatusEnum newStatus);
     }
     public class UserPackageService : BaseService, IUserPackageService
     {
@@ -256,6 +258,11 @@ namespace ApplicationLayer.Service
                     up.Owner.Email
                 }).ToList();
 
+                // Cập nhật trạng thái package thành Archived
+                package.Status = GeneralEnum.PackageStatusEnum.Archived;
+                package.UpdatedAt = DateTime.Now;
+                await _packageRepo.UpdateAsync(package);
+
                 return new JsonResult(new
                 {
                     Message = "Cannot delete package because it is currently in use.",
@@ -289,6 +296,35 @@ namespace ApplicationLayer.Service
                 var packages = await _packageRepo.ListAsync();
 
                 var result = _mapper.Map<List<PackageDto>>(packages);
+
+                return SuccessResp.Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return ErrorResp.InternalServerError(ex.Message);
+            }
+        }
+
+        public async Task<IActionResult> GetUserPackageByToken()
+        {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+
+            var userId = payload.UserId;
+
+            try
+            {
+                var userPackages = await _userPackageRepo.WhereAsync(up => up.OwnerId == userId, "Package");
+
+                if (!userPackages.Any())
+                {
+                    return ErrorResp.NotFound("No package found for this user");
+                }
+
+                var result = _mapper.Map<List<UserPackageDto>>(userPackages);
 
                 return SuccessResp.Ok(result);
             }
@@ -338,6 +374,33 @@ namespace ApplicationLayer.Service
             {
                 PackagesSummary = summary,
                 TotalRevenueAllPackages = totalRevenueAllPackages
+            });
+        }
+
+        public async Task<IActionResult> UpdatePackageStatus(Guid packageId, [FromBody] PackageStatusEnum newStatus)
+        {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+
+            var package = await _packageRepo.FindByIdAsync(packageId);
+            if (package == null)
+            {
+                return ErrorResp.NotFound("Package not found");
+            }
+
+            // Cập nhật trạng thái package
+            package.Status = newStatus;
+            package.UpdatedAt = DateTime.Now;
+            await _packageRepo.UpdateAsync(package);
+
+            return SuccessResp.Ok(new
+            {
+                Message = $"Package status has been updated to {newStatus}",
+                PackageId = package.Id,
+                NewStatus = newStatus
             });
         }
     }
