@@ -57,6 +57,7 @@ namespace ControllerLayer.Controllers
             return await _doctorService.GetAllDoctors();
         }
 
+        [Protected]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateDoctorProfile(Guid id, [FromBody] DoctorUpdateDto dto)
         {

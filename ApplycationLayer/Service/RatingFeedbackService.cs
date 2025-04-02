@@ -31,10 +31,13 @@ namespace ApplicationLayer.Service
     public class RatingFeedbackService : BaseService, IRatingFeedbackService
     {
         private readonly IGenericRepository<RatingFeedback> _ratingFeedbackRepo;
+        private readonly IGenericRepository<DoctorLicense> _doctorLicenseRepo;
 
-        public RatingFeedbackService(IGenericRepository<RatingFeedback> ratingFeedbackRepo, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
+        public RatingFeedbackService(IGenericRepository<RatingFeedback> ratingFeedbackRepo, IGenericRepository<DoctorLicense> doctorLicenseRepo 
+            , IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
         {
             _ratingFeedbackRepo = ratingFeedbackRepo;
+            _doctorLicenseRepo = doctorLicenseRepo;
         }
 
         public async Task<IActionResult> Create(RatingFeedbackCreateDto dto)
@@ -55,7 +58,23 @@ namespace ApplicationLayer.Service
             ratingFeedback.UserId = userId;
             ratingFeedback.CreatedAt = DateTime.Now;
             ratingFeedback.UpdatedAt = DateTime.Now;
+            ratingFeedback.Status = RatingFeedbackStatusEnum.Publish;
             await _ratingFeedbackRepo.CreateAsync(ratingFeedback);
+
+            var doctor = await _doctorLicenseRepo.FindByIdAsync((Guid)dto.DoctorId);
+            if (doctor == null)
+            {
+                return ErrorResp.NotFound("Doctor not found");
+            }
+
+            var ratingOfDoctor = await _ratingFeedbackRepo.WhereAsync(rf => rf.DoctorId == dto.DoctorId);
+
+            // Kiểm tra nếu có rating nào không
+            double averageRating = ratingOfDoctor.Any() ? ratingOfDoctor.Average(rf => rf.Rating) : 0;
+
+            // Cập nhật lại trung bình rating của bác sĩ
+            doctor.RatingAvg = averageRating;
+            await _doctorLicenseRepo.UpdateAsync(doctor);
 
             return SuccessResp.Created("Rating feedback created successfully");
         }
