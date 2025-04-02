@@ -93,5 +93,12 @@ namespace ControllerLayer.Controllers
             _logger.LogInformation("Check duration request received");
             return await _userPackageService.CheckDuration();
         }
+
+        [Protected]
+        [HttpGet("daily-profit")]
+        public async Task<IActionResult> GetDailyProfit()
+        {
+            return await _userPackageService.GetDailyProfit();
+        }
     }
 }

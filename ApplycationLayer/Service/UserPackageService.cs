@@ -27,6 +27,7 @@ namespace ApplicationLayer.Service
         Task<IActionResult> GetUserPackageByToken();
         //admin
         Task<IActionResult> GetNumberUsingPackage();
+        Task<IActionResult> GetDailyProfit();
         Task<IActionResult> UpdatePackageStatus(Guid packageId, [FromBody] PackageStatusEnum newStatus);
         //check duration
         Task<IActionResult> CheckDuration();
@@ -435,6 +436,33 @@ namespace ApplicationLayer.Service
 
             await _userPackageRepo.UpdateAsync(onGoingPack);
             return SuccessResp.Ok("Checked package duration");
+        }
+
+        public async Task<IActionResult> GetDailyProfit()
+        {
+            try
+            {
+                var dailyProfits = await _userPackageRepo.WhereAsync(
+                    filter: null,
+                    orderBy: q => q.OrderBy(up => up.StartDate)
+                );
+
+                var result = dailyProfits
+                    .GroupBy(up => (up.CreatedAt ?? DateTime.MinValue).Date)
+                    .Select(g => new
+                    {
+                        Date = g.Key,
+                        TotalProfit = g.Sum(up => up.PriceAtSubscription)
+                    })
+                    .OrderBy(x => x.Date)
+                    .ToList();
+
+                return SuccessResp.Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return ErrorResp.InternalServerError($"Exception: {ex.Message}");
+            }
         }
     }
 }
