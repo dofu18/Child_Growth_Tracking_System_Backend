@@ -39,44 +39,6 @@ namespace ApplicationLayer.Service
 
         public async Task<IActionResult> GetAllUserAsync(UserQuery query, UserStatusEnum? status)
         {
-            //string searchKeyword = query.SearchKeyword ?? "";
-            //List<Guid> roleIds = query.RoleIds ?? new List<Guid>();
-            //int page = query.Page < 0 ? 0 : query.Page;
-            //int pageSize = query.PageSize <= 0 ? 10 : query.PageSize;
-
-            //var payload = ExtractPayload();
-            //if (payload == null)
-            //{
-            //    return ErrorResp.Unauthorized("Invalid token");
-            //}
-
-            //var resp = new List<User>();
-
-            //if (status == null)
-            //{
-            //    resp = await _userRepo.WhereAsync(r => r.Name.Contains(searchKeyword) || r.Email.Contains(searchKeyword) || r.UserName.Contains(searchKeyword));
-            //}
-            //else
-            //{
-            //    resp = await _userRepo.WhereAsync(r => r.Name.Contains(searchKeyword) || r.Email.Contains(searchKeyword) || r.UserName.Contains(searchKeyword) && r.Status == status);
-            //}
-
-            //var users = resp
-            //  .Skip(page * pageSize)
-            //  .Take(pageSize)
-            //  .ToList();
-
-            //var user = _mapper.Map<IEnumerable<User>>(users);
-
-            //var result = new
-            //{
-            //    Data = user,
-            //    Total = resp.Count,
-            //    Page = query.Page,
-            //    PageSize = query.PageSize
-            //};
-
-            //return SuccessResp.Ok(result);
             string searchKeyword = query.SearchKeyword ?? "";
             List<Guid> roleIds = query.RoleIds ?? new List<Guid>();
             int page = query.Page < 0 ? 0 : query.Page;
