@@ -18,7 +18,7 @@ namespace DomainLayer.Entities
         public string ProfileImg {  get; set; }
         public DoctorLicenseStatusEnum? Status { get; set; }
         public Guid UserId { get; set; }
-        public int RatingAvg { get; set; }
+        public double RatingAvg { get; set; }
         public string? Degrees { get; set; }
         public string Research { get; set; }
         public string Languages { get; set; }
