@@ -49,6 +49,7 @@ namespace ApplicationLayer.Mapper
             //Doctor
             CreateMap<DoctorLicense, DoctorDto>().ReverseMap();
             CreateMap<DoctorLicense, DoctorUpdateDto>().ReverseMap();
+            CreateMap<DoctorCreateDto, DoctorLicense>().ReverseMap();
 
             //RatingFeedback
             CreateMap<RatingFeedback,RatingFeedbackCreateDto>().ReverseMap();
@@ -60,6 +61,10 @@ namespace ApplicationLayer.Mapper
             CreateMap<Package, RenewPackageDto>();
             CreateMap<Package, PackageUpdateDto>().ReverseMap();
             CreateMap<Package, PackageDto>();
+
+            //UserPackage
+            CreateMap<UserPackage, UserPackageDto>()
+                           .ForMember(dest => dest.PackageName, opt => opt.MapFrom(src => src.Package.PackageName));
 
             //Transaction
             CreateMap<Transaction, PaymentResponseDto>();
