@@ -25,6 +25,7 @@ namespace ApplicationLayer.Service
         Task<IActionResult> GetAllUserAsync(UserQuery query, UserStatusEnum? status);
         Task<IActionResult> HandleStatusAsync(Guid id, UserStatusEnum status);
         Task<IActionResult> HandleRoleAsync(Guid id, Guid roleId);
+        Task<IEnumerable<object>> GetUserCountByRoleAsync();
     }
     public class UserService : BaseService, IUserService
     {
@@ -88,6 +89,23 @@ namespace ApplicationLayer.Service
             };
 
             return SuccessResp.Ok(result);
+        }
+
+        public async Task<IEnumerable<object>> GetUserCountByRoleAsync()
+        {
+            var users = await _userRepo.ListAsync();
+            var roles = await _roleRepo.ListAsync();
+
+            var userCountByRole = users
+                .GroupBy(user => user.RoleId)
+                .Select(g => new
+                {
+                    RoleName = roles.FirstOrDefault(r => r.Id == g.Key)?.RoleName ?? "Unknown",
+                    UserCount = g.Count()
+                })
+                .ToList();
+
+            return userCountByRole;
         }
 
         public async Task<IActionResult> HandleGetByIdAsync()
