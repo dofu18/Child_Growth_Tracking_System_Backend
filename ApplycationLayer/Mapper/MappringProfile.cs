@@ -21,6 +21,7 @@ using ApplicationLayer.DTOs.Consultation.ConsultationRequests;
 using ApplicationLayer.DTOs.Consultation.ConsultationResponses;
 using ApplicationLayer.DTOs.Alert;
 using ApplicationLayer.DTOs;
+using ApplicationLayer.DTOs.WHOData;
 
 namespace ApplicationLayer.Mapper
 {
@@ -83,6 +84,10 @@ namespace ApplicationLayer.Mapper
             //Response
             CreateMap<ConsultationResponse, ConsultationResponseDto>().ReverseMap();
             CreateMap<ConsultationResponse, ConsultationResponseCreateDto>().ReverseMap();
+
+            //WhoData
+            CreateMap<WhoDataDto, WhoData>().ReverseMap();
+            CreateMap<WhoDataUpdateDto, WhoData>();
         }
     }
 }
