@@ -127,7 +127,7 @@ builder.Services.AddScoped<IConsultationResponseService, ConsultationResponseSer
 builder.Services.AddScoped<IGrowthTrackingService, GrowthTrackingService>();
 builder.Services.AddScoped<ISupabaseStorageService, SupabaseStorageService>();
 builder.Services.AddScoped<IAlertService, AlertService>();
-
+builder.Services.AddScoped<IWHODataService, WHODataService>();
 
 
 var app = builder.Build();
