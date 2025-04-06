@@ -112,7 +112,7 @@ namespace ApplicationLayer.Service
             var role = _roleRepo.FoundOrThrowAsync(user.RoleId);
 
             var sessionId = Guid.NewGuid();
-            var accessTk = GenerateAccessTk(user.Id, role.Result.RoleName, sessionId, user.Email, UserStatusEnum.NotVerified);
+            var accessTk = GenerateAccessTk(user.Id, role.Result.RoleName, sessionId, user.Email, UserStatusEnum.Active);
 
             var redisKey = $"local:state:{state}";
             await _cacheService.Set(redisKey, user, TimeSpan.FromMinutes(15));
