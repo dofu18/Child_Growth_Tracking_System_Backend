@@ -32,19 +32,19 @@ namespace InfrastructureLayer.Database
 
         public ChildGrowthDbContext(DbContextOptions<ChildGrowthDbContext> options) : base(options) { }
 
-        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            var entries = ChangeTracker.Entries().Where(x => x.Entity is BaseEntity && (x.State == EntityState.Added || x.State == EntityState.Modified));
-            foreach (var entry in entries)
-            {
-                if (entry.State == EntityState.Added)
-                {
-                    ((BaseEntity)entry.Entity).CreatedAt = DateTime.UtcNow;
-                }
-              ((BaseEntity)entry.Entity).UpdatedAt = DateTime.UtcNow;
-            }
-            return base.SaveChangesAsync(cancellationToken);
-        }
+        //public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        //{
+        //    var entries = ChangeTracker.Entries().Where(x => x.Entity is BaseEntity && (x.State == EntityState.Added || x.State == EntityState.Modified));
+        //    foreach (var entry in entries)
+        //    {
+        //        if (entry.State == EntityState.Added)
+        //        {
+        //            ((BaseEntity)entry.Entity).CreatedAt = DateTime.UtcNow;
+        //        }
+        //      ((BaseEntity)entry.Entity).UpdatedAt = DateTime.UtcNow;
+        //    }
+        //    return base.SaveChangesAsync(cancellationToken);
+        //}
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -192,7 +192,7 @@ namespace InfrastructureLayer.Database
                 e.Property(x => x.BmiPercentile).IsRequired();
                 e.Property(x => x.Notes).IsRequired(false).HasMaxLength(500);
                 e.HasOne(x => x.CreatedUser).WithMany().HasForeignKey(x => x.CreatedBy).OnDelete(DeleteBehavior.Cascade);
-                e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
+                e.Property(x => x.CreatedAt).IsRequired();
 
             });
             modelBuilder.Entity<Package>(e =>
