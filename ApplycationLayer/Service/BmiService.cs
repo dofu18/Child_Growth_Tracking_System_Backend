@@ -61,7 +61,7 @@ namespace ApplicationLayer.Service
 
             // Chuyển đổi DateOnly thành DateTime
             DateTime dob = child.DoB.ToDateTime(TimeOnly.MinValue);   // Ngày sinh của trẻ
-            DateTime doy = request.DoY.ToDateTime(TimeOnly.MinValue); // Ngày nhập vào từ request
+            //DateTime doy = request.Crea.ToDateTime(TimeOnly.MinValue); // Ngày nhập vào từ request
 
             // Kiểm tra nếu DoB nhập vào nhỏ hơn ngày sinh của trẻ
             if (dob < child.DoB.ToDateTime(TimeOnly.MinValue))
@@ -70,8 +70,8 @@ namespace ApplicationLayer.Service
             }
 
             // Tính số tháng tuổi
-            int ageInMonths = (doy.Year - dob.Year) * 12 + (doy.Month - dob.Month);
-            if (doy.Day < dob.Day) ageInMonths--;
+            int ageInMonths = (request.CreatedAt.Year - dob.Year) * 12 + (request.CreatedAt.Month - dob.Month);
+            if (request.CreatedAt.Day < dob.Day) ageInMonths--;
 
             // Kiểm tra nếu tuổi nằm ngoài phạm vi hợp lệ
             if (ageInMonths < 0 || ageInMonths > 240)
@@ -130,10 +130,11 @@ namespace ApplicationLayer.Service
                 BmiPercentile = bmiPercentile,
                 BmiCategory = bmiCategory.Id,
                 Notes = request.Notes,
-                CreatedBy = payload.UserId
+                CreatedBy = payload.UserId,
+                CreatedAt = request.CreatedAt,
             };
 
-            await _growthRecordRepo.CreateAsync(record);
+            await _growthRecordRepo.CreateWithoutCreatedAtAsync(record);
 
             // Cập nhật Children
             child.Height = request.Height;
@@ -178,7 +179,7 @@ namespace ApplicationLayer.Service
 
             // Chuyển đổi DateOnly thành DateTime
             DateTime dob = child.DoB.ToDateTime(TimeOnly.MinValue);   // Ngày sinh của trẻ
-            DateTime doy = request.DoY.ToDateTime(TimeOnly.MinValue); // Ngày nhập vào từ request
+            //DateTime doy = request.DoY.ToDateTime(TimeOnly.MinValue); // Ngày nhập vào từ request
 
             // Kiểm tra nếu DoB nhập vào nhỏ hơn ngày sinh của trẻ
             if (dob < child.DoB.ToDateTime(TimeOnly.MinValue))
@@ -187,8 +188,8 @@ namespace ApplicationLayer.Service
             }
 
             // Tính số tháng tuổi
-            int ageInMonths = (doy.Year - dob.Year) * 12 + (doy.Month - dob.Month);
-            if (doy.Day < dob.Day) ageInMonths--;
+            int ageInMonths = (request.CreatedAt.Year - dob.Year) * 12 + (request.CreatedAt.Month - dob.Month);
+            if (request.CreatedAt.Day < dob.Day) ageInMonths--;
 
             // Kiểm tra nếu tuổi nằm ngoài phạm vi hợp lệ
             if (ageInMonths < 0 || ageInMonths > 240)
