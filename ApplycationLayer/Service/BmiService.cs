@@ -63,10 +63,10 @@ namespace ApplicationLayer.Service
             DateTime dob = child.DoB.ToDateTime(TimeOnly.MinValue);   // Ngày sinh của trẻ
             DateTime doy = request.DoY.ToDateTime(TimeOnly.MinValue); // Ngày nhập vào từ request
 
-            // Kiểm tra nếu DoB nhập vào nhỏ hơn ngày sinh của trẻ
-            if (dob < child.DoB.ToDateTime(TimeOnly.MinValue))
+            // Kiểm tra nếu DoY nhập vào nhỏ hơn ngày sinh của trẻ
+            if (doy < dob || doy > DateTime.UtcNow)
             {
-                throw new Exception("Invalid Date of Birth: The entered DoB cannot be earlier than the child's actual birth date.");
+                throw new Exception("Invalid Date: Measurement date must be between the child's date of birth and today.");
             }
 
             // Tính số tháng tuổi
@@ -180,10 +180,10 @@ namespace ApplicationLayer.Service
             DateTime dob = child.DoB.ToDateTime(TimeOnly.MinValue);   // Ngày sinh của trẻ
             DateTime doy = request.DoY.ToDateTime(TimeOnly.MinValue); // Ngày nhập vào từ request
 
-            // Kiểm tra nếu DoB nhập vào nhỏ hơn ngày sinh của trẻ
-            if (dob < child.DoB.ToDateTime(TimeOnly.MinValue))
+            // Kiểm tra nếu DoY nhập vào nhỏ hơn ngày sinh của trẻ
+            if (doy < dob || doy > DateTime.UtcNow)
             {
-                throw new Exception("Invalid Date of Birth: The entered DoB cannot be earlier than the child's actual birth date.");
+                throw new Exception("Invalid Date: Measurement date must be between the child's date of birth and today.");
             }
 
             // Tính số tháng tuổi

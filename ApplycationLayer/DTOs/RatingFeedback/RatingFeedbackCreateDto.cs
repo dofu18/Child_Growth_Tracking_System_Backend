@@ -11,6 +11,6 @@ namespace ApplicationLayer.DTOs.RatingFeedback
     {
         public int Rating { get; set; }
         public string Feedback { get; set; }
-        public RatingFeedbackStatusEnum Status { get; set; }
+        public Guid? DoctorId { get; set; }
     }
 }

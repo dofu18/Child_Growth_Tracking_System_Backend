@@ -25,6 +25,7 @@ namespace ApplicationLayer.Service
         Task<IActionResult> GetAllUserAsync(UserQuery query, UserStatusEnum? status);
         Task<IActionResult> HandleStatusAsync(Guid id, UserStatusEnum status);
         Task<IActionResult> HandleRoleAsync(Guid id, Guid roleId);
+        Task<IEnumerable<object>> GetUserCountByRoleAsync();
     }
     public class UserService : BaseService, IUserService
     {
@@ -39,44 +40,6 @@ namespace ApplicationLayer.Service
 
         public async Task<IActionResult> GetAllUserAsync(UserQuery query, UserStatusEnum? status)
         {
-            //string searchKeyword = query.SearchKeyword ?? "";
-            //List<Guid> roleIds = query.RoleIds ?? new List<Guid>();
-            //int page = query.Page < 0 ? 0 : query.Page;
-            //int pageSize = query.PageSize <= 0 ? 10 : query.PageSize;
-
-            //var payload = ExtractPayload();
-            //if (payload == null)
-            //{
-            //    return ErrorResp.Unauthorized("Invalid token");
-            //}
-
-            //var resp = new List<User>();
-
-            //if (status == null)
-            //{
-            //    resp = await _userRepo.WhereAsync(r => r.Name.Contains(searchKeyword) || r.Email.Contains(searchKeyword) || r.UserName.Contains(searchKeyword));
-            //}
-            //else
-            //{
-            //    resp = await _userRepo.WhereAsync(r => r.Name.Contains(searchKeyword) || r.Email.Contains(searchKeyword) || r.UserName.Contains(searchKeyword) && r.Status == status);
-            //}
-
-            //var users = resp
-            //  .Skip(page * pageSize)
-            //  .Take(pageSize)
-            //  .ToList();
-
-            //var user = _mapper.Map<IEnumerable<User>>(users);
-
-            //var result = new
-            //{
-            //    Data = user,
-            //    Total = resp.Count,
-            //    Page = query.Page,
-            //    PageSize = query.PageSize
-            //};
-
-            //return SuccessResp.Ok(result);
             string searchKeyword = query.SearchKeyword ?? "";
             List<Guid> roleIds = query.RoleIds ?? new List<Guid>();
             int page = query.Page < 0 ? 0 : query.Page;
@@ -126,6 +89,23 @@ namespace ApplicationLayer.Service
             };
 
             return SuccessResp.Ok(result);
+        }
+
+        public async Task<IEnumerable<object>> GetUserCountByRoleAsync()
+        {
+            var users = await _userRepo.ListAsync();
+            var roles = await _roleRepo.ListAsync();
+
+            var userCountByRole = users
+                .GroupBy(user => user.RoleId)
+                .Select(g => new
+                {
+                    RoleName = roles.FirstOrDefault(r => r.Id == g.Key)?.RoleName ?? "Unknown",
+                    UserCount = g.Count()
+                })
+                .ToList();
+
+            return userCountByRole;
         }
 
         public async Task<IActionResult> HandleGetByIdAsync()

@@ -28,7 +28,7 @@ namespace ControllerLayer.Controllers
 
         [Protected]
         [HttpPost("create")]
-        public async Task<IActionResult> CreateDoctorProfile([FromBody] DoctorDto dto)
+        public async Task<IActionResult> CreateDoctorProfile([FromBody] DoctorCreateDto dto)
         {
             _logger.LogInformation("Create Doctor request received");
             return await _doctorService.CreateDoctorProfile(dto);
@@ -57,6 +57,7 @@ namespace ControllerLayer.Controllers
             return await _doctorService.GetAllDoctors();
         }
 
+        [Protected]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateDoctorProfile(Guid id, [FromBody] DoctorUpdateDto dto)
         {

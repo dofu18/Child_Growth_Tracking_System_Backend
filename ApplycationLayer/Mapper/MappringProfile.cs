@@ -50,6 +50,7 @@ namespace ApplicationLayer.Mapper
             //Doctor
             CreateMap<DoctorLicense, DoctorDto>().ReverseMap();
             CreateMap<DoctorLicense, DoctorUpdateDto>().ReverseMap();
+            CreateMap<DoctorCreateDto, DoctorLicense>().ReverseMap();
 
             //RatingFeedback
             CreateMap<RatingFeedback,RatingFeedbackCreateDto>().ReverseMap();

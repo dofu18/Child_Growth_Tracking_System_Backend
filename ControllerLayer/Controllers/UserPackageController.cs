@@ -85,5 +85,20 @@ namespace ControllerLayer.Controllers
             _logger.LogInformation("Fetching all packages");
             return await _userPackageService.UpdatePackageStatus(packageId, newStatus);
         }
+
+        [Protected]
+        [HttpPut("check-duration")]
+        public async Task<IActionResult> CheckDuration()
+        {
+            _logger.LogInformation("Check duration request received");
+            return await _userPackageService.CheckDuration();
+        }
+
+        [Protected]
+        [HttpGet("daily-profit")]
+        public async Task<IActionResult> GetDailyProfit()
+        {
+            return await _userPackageService.GetDailyProfit();
+        }
     }
 }

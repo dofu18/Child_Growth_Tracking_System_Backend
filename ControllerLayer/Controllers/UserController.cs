@@ -63,5 +63,20 @@ namespace ControllerLayer.Controllers
 
             return await _service.HandleRoleAsync(userId, roleId);
         }
+
+        [Protected]
+        [HttpGet("user-count-by-role")]
+        public async Task<IActionResult> GetUserCountByRole()
+        {
+            try
+            {
+                var result = await _service.GetUserCountByRoleAsync();
+                return Ok(new { code = 200, message = "OK", data = result });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { code = 500, message = ex.Message });
+            }
+        }
     }
 }

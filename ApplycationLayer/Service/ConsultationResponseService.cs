@@ -102,10 +102,10 @@ namespace ApplicationLayer.Service
             var userId = payload.UserId;
 
             var user = await _userRepo.FindByIdAsync(userId);
-            if (user.RoleId != Guid.Parse(GeneralConst.ROLE_DOCTOR_GUID))
-            {
-                return ErrorResp.Unauthorized("Just doctor can response consultation");
-            }
+            //if (user.RoleId != Guid.Parse(GeneralConst.ROLE_DOCTOR_GUID))
+            //{
+            //    return ErrorResp.Unauthorized("Just doctor can response consultation");
+            //}
 
             var request = await _requestRepo.FoundOrThrowAsync(requestId);
 

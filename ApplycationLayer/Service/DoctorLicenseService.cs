@@ -18,7 +18,7 @@ namespace ApplicationLayer.Service
     public interface IDoctorLicenseService
     {
         Task<IActionResult> HandleGetByUserIdAsync(Guid userId);
-        Task<IActionResult> CreateDoctorProfile(DoctorDto dto);
+        Task<IActionResult> CreateDoctorProfile(DoctorCreateDto dto);
         Task<IActionResult> ApproveDoctorProfile(Guid id);
         Task<IActionResult> GetAllDoctors();
         Task<IActionResult> UpdateDoctorProfile(Guid id, DoctorUpdateDto dto);
@@ -43,7 +43,7 @@ namespace ApplicationLayer.Service
             _sharingRepo = sharingRepo;
         }
 
-        public async Task<IActionResult> CreateDoctorProfile(DoctorDto dto)
+        public async Task<IActionResult> CreateDoctorProfile(DoctorCreateDto dto)
         {
             var payload = ExtractPayload();
             if (payload == null)
@@ -54,9 +54,8 @@ namespace ApplicationLayer.Service
 
             var doctorLicense = _mapper.Map<DoctorLicense>(dto);
             doctorLicense.UserId = userId;
-            doctorLicense.CreatedAt = DateTime.Now;
-            doctorLicense.UpdatedAt = DateTime.Now;
             doctorLicense.Status = DoctorLicenseStatusEnum.Pending; // Đợi admin duyệt
+            doctorLicense.RatingAvg = 0;
 
             var existingDoctorLicense = await _licenseRepo.FindByIdAsync(userId);
             if (existingDoctorLicense != null)

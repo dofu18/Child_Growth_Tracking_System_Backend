@@ -27,7 +27,10 @@ namespace ApplicationLayer.Service
         Task<IActionResult> GetUserPackageByToken();
         //admin
         Task<IActionResult> GetNumberUsingPackage();
+        Task<IActionResult> GetDailyProfit();
         Task<IActionResult> UpdatePackageStatus(Guid packageId, [FromBody] PackageStatusEnum newStatus);
+        //check duration
+        Task<IActionResult> CheckDuration();
     }
     public class UserPackageService : BaseService, IUserPackageService
     {
@@ -317,7 +320,7 @@ namespace ApplicationLayer.Service
 
             try
             {
-                var userPackages = await _userPackageRepo.WhereAsync(up => up.OwnerId == userId, "Package");
+                var userPackages = await _userPackageRepo.WhereAsync(up => up.OwnerId == userId && up.Status == UserPackageStatusEnum.OnGoing, "Package");
 
                 if (!userPackages.Any())
                 {
@@ -402,6 +405,64 @@ namespace ApplicationLayer.Service
                 PackageId = package.Id,
                 NewStatus = newStatus
             });
+        }
+
+        public async Task<IActionResult> CheckDuration()
+        {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+
+            var userId = payload.UserId;
+            var onGoingPack = await _userPackageRepo.FirstOrDefaultAsync(up => up.OwnerId == userId && up.Status == UserPackageStatusEnum.OnGoing);
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+            if (onGoingPack == null)
+            {
+                return SuccessResp.Ok("No package");
+            }
+
+            if (onGoingPack.ExpireDate >= today)
+            {
+                onGoingPack.Status = UserPackageStatusEnum.OnGoing;
+            }
+            else
+            {
+                onGoingPack.Status = UserPackageStatusEnum.Expired;
+                onGoingPack.UpdatedAt = DateTime.UtcNow;
+            }
+
+            await _userPackageRepo.UpdateAsync(onGoingPack);
+            return SuccessResp.Ok("Checked package duration");
+        }
+
+        public async Task<IActionResult> GetDailyProfit()
+        {
+            try
+            {
+                var dailyProfits = await _userPackageRepo.WhereAsync(
+                    filter: null,
+                    orderBy: q => q.OrderBy(up => up.StartDate)
+                );
+
+                var result = dailyProfits
+                    .GroupBy(up => (up.CreatedAt ?? DateTime.MinValue).Date)
+                    .Select(g => new
+                    {
+                        Date = g.Key,
+                        TotalProfit = g.Sum(up => up.PriceAtSubscription)
+                    })
+                    .OrderBy(x => x.Date)
+                    .ToList();
+
+                return SuccessResp.Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return ErrorResp.InternalServerError($"Exception: {ex.Message}");
+            }
         }
     }
 }
