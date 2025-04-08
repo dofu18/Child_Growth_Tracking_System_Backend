@@ -61,12 +61,12 @@ namespace ApplicationLayer.Service
 
             // Chuyển đổi DateOnly thành DateTime
             DateTime dob = child.DoB.ToDateTime(TimeOnly.MinValue);   // Ngày sinh của trẻ
-            //DateTime doy = request.Crea.ToDateTime(TimeOnly.MinValue); // Ngày nhập vào từ request
+            DateTime doy = request.CreatedAt; // Ngày nhập vào từ request
 
-            // Kiểm tra nếu DoB nhập vào nhỏ hơn ngày sinh của trẻ
-            if (dob < child.DoB.ToDateTime(TimeOnly.MinValue))
+            // Kiểm tra nếu DoY nhập vào nhỏ hơn ngày sinh của trẻ
+            if (doy < dob || doy > DateTime.UtcNow)
             {
-                throw new Exception("Invalid Date of Birth: The entered DoB cannot be earlier than the child's actual birth date.");
+                throw new Exception("Invalid Date: Measurement date must be between the child's date of birth and today.");
             }
 
             // Tính số tháng tuổi
@@ -103,19 +103,16 @@ namespace ApplicationLayer.Service
             // Lấy BMI Percentile từ bảng WhoData
             var whoDataList = await _whoDataRepo.WhereAsync(w => w.AgeMonth <= ageInMonths && w.Gender == request.Gender && w.Bmi <= bmi);
             var whoData = whoDataList.OrderBy(w => Math.Abs(w.Bmi - bmi)).FirstOrDefault();
-            decimal bmiPercentile;
 
-            if (whoData == null)
-            {
-                bmiPercentile = 99;
-            }
-            else
-            {
-                bmiPercentile = whoData.BmiPercentile;
-            }
+            decimal bmiPercentile = whoData?.BmiPercentile ?? 99;
 
             //Xác định BMI Category
-            var bmiCategory = await _bmiCategoryRepo.FirstOrDefaultAsync(c => c.BmiBottom <= bmi && c.BmiTop >= bmi);
+            var bmiCategory = await _bmiCategoryRepo.FirstOrDefaultAsync(c =>
+                                c.BmiBottom <= bmi &&
+                                c.BmiTop >= bmi &&
+                                c.FromAge <= ageInMonths &&
+                                c.ToAge >= ageInMonths
+            );
 
             if (bmiCategory == null) throw new Exception("BMI Category not found");
 
@@ -179,12 +176,12 @@ namespace ApplicationLayer.Service
 
             // Chuyển đổi DateOnly thành DateTime
             DateTime dob = child.DoB.ToDateTime(TimeOnly.MinValue);   // Ngày sinh của trẻ
-            //DateTime doy = request.DoY.ToDateTime(TimeOnly.MinValue); // Ngày nhập vào từ request
+            DateTime doy = request.CreatedAt; // Ngày nhập vào từ request
 
-            // Kiểm tra nếu DoB nhập vào nhỏ hơn ngày sinh của trẻ
-            if (dob < child.DoB.ToDateTime(TimeOnly.MinValue))
+            // Kiểm tra nếu DoY nhập vào nhỏ hơn ngày sinh của trẻ
+            if (doy < dob || doy > DateTime.UtcNow)
             {
-                throw new Exception("Invalid Date of Birth: The entered DoB cannot be earlier than the child's actual birth date.");
+                throw new Exception("Invalid Date: Measurement date must be between the child's date of birth and today.");
             }
 
             // Tính số tháng tuổi
@@ -221,19 +218,16 @@ namespace ApplicationLayer.Service
             // Lấy BMI Percentile từ bảng WhoData
             var whoDataList = await _whoDataRepo.WhereAsync(w => w.AgeMonth <= ageInMonths && w.Gender == request.Gender && w.Bmi <= bmi);
             var whoData = whoDataList.OrderBy(w => Math.Abs(w.Bmi - bmi)).FirstOrDefault();
-            decimal bmiPercentile;
 
-            if (whoData == null)
-            {
-                bmiPercentile = 99;
-            }
-            else
-            {
-                bmiPercentile = whoData.BmiPercentile;
-            }
+            decimal bmiPercentile = whoData?.BmiPercentile ?? 99;
 
             //Xác định BMI Category
-            var bmiCategory = await _bmiCategoryRepo.FirstOrDefaultAsync(c => c.BmiBottom <= bmi && c.BmiTop >= bmi);
+            var bmiCategory = await _bmiCategoryRepo.FirstOrDefaultAsync(c =>
+                                c.BmiBottom <= bmi &&
+                                c.BmiTop >= bmi &&
+                                c.FromAge <= ageInMonths &&
+                                c.ToAge >= ageInMonths
+            );
 
             if (bmiCategory == null) throw new Exception("BMI Category not found");
 
@@ -250,7 +244,11 @@ namespace ApplicationLayer.Service
             await _growthRecordRepo.UpdateAsync(record);
 
             // Cập nhật bảng Children nếu đây là bản ghi mới nhất của trẻ
-            if (record.CreatedAt == child.UpdatedAt)
+            var latestRecord = (await _growthRecordRepo.WhereAsync(r => r.ChildrentId == record.ChildrentId))
+                                .OrderByDescending(r => r.CreatedAt)
+                                .FirstOrDefault();
+
+            if (latestRecord != null && latestRecord.Id == record.Id)
             {
                 child.Height = request.Height;
                 child.Weight = request.Weight;
