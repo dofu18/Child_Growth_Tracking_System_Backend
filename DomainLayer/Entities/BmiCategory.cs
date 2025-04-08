@@ -11,5 +11,7 @@ namespace DomainLayer.Entities
         public string Name { get; set; }
         public decimal BmiTop { get; set; }
         public decimal BmiBottom { get; set; }
+        public int FromAge { get; set; }
+        public int ToAge { get; set; }
     }
 }

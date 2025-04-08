@@ -75,23 +75,109 @@ namespace InfrastructureLayer.Database
                 e.Property(x => x.Name).IsRequired().HasMaxLength(100);
                 e.Property(x => x.BmiTop).IsRequired();
                 e.Property(x => x.BmiBottom).IsRequired();
+                e.Property(x => x.FromAge).IsRequired();
+                e.Property(x => x.ToAge).IsRequired();
                 e.Property(x => x.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
                 e.Property(x => x.UpdatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
             modelBuilder.Entity<BmiCategory>().HasData(new BmiCategory
             {
-                Id = Guid.Parse("01955c45-f781-7835-8d4b-aff20764aca6"),
+                Id = Guid.Parse("1e567c0b-62f1-4cf7-a528-f82f623ff9ee"),
                 Name = "Under Weight",
-                BmiTop = 5,
+                BmiTop = 14,
                 BmiBottom = 0,
+                FromAge = 0,
+                ToAge = 2,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("f6ed1a64-0a0e-4217-bcb4-c1179c519a79"),
+                Name = "Under Weight",
+                BmiTop = 13,
+                BmiBottom = 0,
+                FromAge = 3,
+                ToAge = 5,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("3a9b3c93-e64e-4f0e-9345-2c5cccb20e82"),
+                Name = "Under Weight",
+                BmiTop = 14,
+                BmiBottom = 0,
+                FromAge = 6,
+                ToAge = 10,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("2ff769f8-c61b-4e0d-9e62-c1685e1a79c2"),
+                Name = "Under Weight",
+                BmiTop = 14,
+                BmiBottom = 0,
+                FromAge = 11,
+                ToAge = 15,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("61f4d3d2-6f6a-408a-9d4f-1ad84a82e150"),
+                Name = "Under Weight",
+                BmiTop = 13,
+                BmiBottom = 0,
+                FromAge = 16,
+                ToAge = 100,
                 CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
             }, new BmiCategory
             {
                 Id = Guid.Parse("01955c46-2df8-74fd-bbb1-c8c1d792ee5b"),
                 Name = "Healthy Weight",
-                BmiTop = 85,
-                BmiBottom = 5,
+                BmiTop = 17,
+                BmiBottom = 14,
+                FromAge = 0,
+                ToAge = 2,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("efc73434-1e42-43ae-8d14-14878e5b13b1"),
+                Name = "Healthy Weight",
+                BmiTop = 17,
+                BmiBottom = 14,
+                FromAge = 3,
+                ToAge = 5,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("1bc993ae-e0a8-4eec-bf2a-c0576d62bc25"),
+                Name = "Healthy Weight",
+                BmiTop = 17,
+                BmiBottom = 14,
+                FromAge = 6,
+                ToAge = 10,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("5c3fa0f5-f60b-4c4f-b2d0-0d0a4c03db43"),
+                Name = "Healthy Weight",
+                BmiTop = 17,
+                BmiBottom = 14,
+                FromAge = 11,
+                ToAge = 15,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("54812287-f31f-4c8c-b90f-5e1d52782810"),
+                Name = "Healthy Weight",
+                BmiTop = 17,
+                BmiBottom = 14,
+                FromAge = 16,
+                ToAge = 100,
                 CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
             }, new BmiCategory
@@ -100,6 +186,48 @@ namespace InfrastructureLayer.Database
                 Name = "Over Weight",
                 BmiTop = 85,
                 BmiBottom = 95,
+                FromAge = 0,
+                ToAge = 2,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("337a2951-d570-4fa7-8a3a-264cbfe1ea0a"),
+                Name = "Over Weight",
+                BmiTop = 85,
+                BmiBottom = 95,
+                FromAge = 3,
+                ToAge = 5,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("2928f86d-44c9-46ac-8c26-13a77d1bc9a2"),
+                Name = "Over Weight",
+                BmiTop = 85,
+                BmiBottom = 95,
+                FromAge = 6,
+                ToAge = 10,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("2b4a6c93-7be8-41c4-b173-242b37ae3f15"),
+                Name = "Over Weight",
+                BmiTop = 85,
+                BmiBottom = 95,
+                FromAge = 11,
+                ToAge = 15,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("10cf12cd-9e5f-456e-a073-1b359028123e"),
+                Name = "Over Weight",
+                BmiTop = 85,
+                BmiBottom = 95,
+                FromAge = 16,
+                ToAge = 100,
                 CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
             }, new BmiCategory
@@ -108,6 +236,48 @@ namespace InfrastructureLayer.Database
                 Name = "Obesity",
                 BmiTop = 95,
                 BmiBottom = 120,
+                FromAge = 0,
+                ToAge = 2,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("b4c1f9b4-544e-45d5-936f-83e90e9ac0a6"),
+                Name = "Obesity",
+                BmiTop = 95,
+                BmiBottom = 120,
+                FromAge = 3,
+                ToAge = 5,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("a25596e3-6c7f-4e59-bac3-19f155b8a7dc"),
+                Name = "Obesity",
+                BmiTop = 95,
+                BmiBottom = 120,
+                FromAge = 6,
+                ToAge = 10,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("c8fbecc3-857a-4427-a626-d38c56a147cc"),
+                Name = "Obesity",
+                BmiTop = 95,
+                BmiBottom = 120,
+                FromAge = 11,
+                ToAge = 15,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("889fd61d-679f-4191-878e-f52bb3d5ec65"),
+                Name = "Obesity",
+                BmiTop = 95,
+                BmiBottom = 120,
+                FromAge = 16,
+                ToAge = 100,
                 CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
             }, new BmiCategory
@@ -116,6 +286,48 @@ namespace InfrastructureLayer.Database
                 Name = "Servere Obesity",
                 BmiTop = 120,
                 BmiBottom = 140,
+                FromAge = 0,
+                ToAge = 2,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("92c0c29c-978d-43d5-b58a-3f7fd5ea1d60"),
+                Name = "Servere Obesity",
+                BmiTop = 120,
+                BmiBottom = 140,
+                FromAge = 3,
+                ToAge = 5,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("4aa18090-73ec-4c41-bcfc-3f8b2f144e7e"),
+                Name = "Servere Obesity",
+                BmiTop = 120,
+                BmiBottom = 140,
+                FromAge = 6,
+                ToAge = 10,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("dbbe82b4-ef1e-48b5-a6d5-d479905228d8"),
+                Name = "Servere Obesity",
+                BmiTop = 120,
+                BmiBottom = 140,
+                FromAge = 11,
+                ToAge = 15,
+                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            }, new BmiCategory
+            {
+                Id = Guid.Parse("88e091a4-02ef-404e-9522-0cb7f933f03d"),
+                Name = "Servere Obesity",
+                BmiTop = 120,
+                BmiBottom = 140,
+                FromAge = 16,
+                ToAge = 100,
                 CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
             });
