@@ -206,5 +206,14 @@ namespace InfrastructureLayer.Repository
                 ? await query.ToListAsync()
                 : await query.Where(predicate).ToListAsync();
         }
+
+        public async Task<T> CreateWithoutCreatedAtAsync(T entity)
+        {
+            entity.UpdatedAt = DateTime.UtcNow;
+            await dbSet.AddAsync(entity);
+            await _context.SaveChangesAsync();
+
+            return entity;
+        }
     }
 }

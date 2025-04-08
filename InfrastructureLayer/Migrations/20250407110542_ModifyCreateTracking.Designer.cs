@@ -3,6 +3,7 @@ using System;
 using InfrastructureLayer.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace InfrastructureLayer.Migrations
 {
     [DbContext(typeof(ChildGrowthDbContext))]
-    partial class ChildGrowthDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250407110542_ModifyCreateTracking")]
+    partial class ModifyCreateTracking
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -78,16 +81,10 @@ namespace InfrastructureLayer.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<int>("FromAge")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
-
-                    b.Property<int>("ToAge")
-                        .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -101,112 +98,20 @@ namespace InfrastructureLayer.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("1e567c0b-62f1-4cf7-a528-f82f623ff9ee"),
+                            Id = new Guid("01955c45-f781-7835-8d4b-aff20764aca6"),
                             BmiBottom = 0m,
-                            BmiTop = 14m,
+                            BmiTop = 5m,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 0,
                             Name = "Under Weight",
-                            ToAge = 2,
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("f6ed1a64-0a0e-4217-bcb4-c1179c519a79"),
-                            BmiBottom = 0m,
-                            BmiTop = 13m,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 3,
-                            Name = "Under Weight",
-                            ToAge = 5,
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("3a9b3c93-e64e-4f0e-9345-2c5cccb20e82"),
-                            BmiBottom = 0m,
-                            BmiTop = 14m,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 6,
-                            Name = "Under Weight",
-                            ToAge = 10,
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("2ff769f8-c61b-4e0d-9e62-c1685e1a79c2"),
-                            BmiBottom = 0m,
-                            BmiTop = 14m,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 11,
-                            Name = "Under Weight",
-                            ToAge = 15,
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("61f4d3d2-6f6a-408a-9d4f-1ad84a82e150"),
-                            BmiBottom = 0m,
-                            BmiTop = 13m,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 16,
-                            Name = "Under Weight",
-                            ToAge = 100,
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
                             Id = new Guid("01955c46-2df8-74fd-bbb1-c8c1d792ee5b"),
-                            BmiBottom = 14m,
-                            BmiTop = 17m,
+                            BmiBottom = 5m,
+                            BmiTop = 85m,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 0,
                             Name = "Healthy Weight",
-                            ToAge = 2,
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("efc73434-1e42-43ae-8d14-14878e5b13b1"),
-                            BmiBottom = 14m,
-                            BmiTop = 17m,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 3,
-                            Name = "Healthy Weight",
-                            ToAge = 5,
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("1bc993ae-e0a8-4eec-bf2a-c0576d62bc25"),
-                            BmiBottom = 14m,
-                            BmiTop = 17m,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 6,
-                            Name = "Healthy Weight",
-                            ToAge = 10,
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("5c3fa0f5-f60b-4c4f-b2d0-0d0a4c03db43"),
-                            BmiBottom = 14m,
-                            BmiTop = 17m,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 11,
-                            Name = "Healthy Weight",
-                            ToAge = 15,
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("54812287-f31f-4c8c-b90f-5e1d52782810"),
-                            BmiBottom = 14m,
-                            BmiTop = 17m,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 16,
-                            Name = "Healthy Weight",
-                            ToAge = 100,
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
@@ -215,53 +120,7 @@ namespace InfrastructureLayer.Migrations
                             BmiBottom = 95m,
                             BmiTop = 85m,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 0,
                             Name = "Over Weight",
-                            ToAge = 2,
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("337a2951-d570-4fa7-8a3a-264cbfe1ea0a"),
-                            BmiBottom = 95m,
-                            BmiTop = 85m,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 3,
-                            Name = "Over Weight",
-                            ToAge = 5,
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("2928f86d-44c9-46ac-8c26-13a77d1bc9a2"),
-                            BmiBottom = 95m,
-                            BmiTop = 85m,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 6,
-                            Name = "Over Weight",
-                            ToAge = 10,
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("2b4a6c93-7be8-41c4-b173-242b37ae3f15"),
-                            BmiBottom = 95m,
-                            BmiTop = 85m,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 11,
-                            Name = "Over Weight",
-                            ToAge = 15,
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("10cf12cd-9e5f-456e-a073-1b359028123e"),
-                            BmiBottom = 95m,
-                            BmiTop = 85m,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 16,
-                            Name = "Over Weight",
-                            ToAge = 100,
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
@@ -270,53 +129,7 @@ namespace InfrastructureLayer.Migrations
                             BmiBottom = 120m,
                             BmiTop = 95m,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 0,
                             Name = "Obesity",
-                            ToAge = 2,
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("b4c1f9b4-544e-45d5-936f-83e90e9ac0a6"),
-                            BmiBottom = 120m,
-                            BmiTop = 95m,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 3,
-                            Name = "Obesity",
-                            ToAge = 5,
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("a25596e3-6c7f-4e59-bac3-19f155b8a7dc"),
-                            BmiBottom = 120m,
-                            BmiTop = 95m,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 6,
-                            Name = "Obesity",
-                            ToAge = 10,
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("c8fbecc3-857a-4427-a626-d38c56a147cc"),
-                            BmiBottom = 120m,
-                            BmiTop = 95m,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 11,
-                            Name = "Obesity",
-                            ToAge = 15,
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("889fd61d-679f-4191-878e-f52bb3d5ec65"),
-                            BmiBottom = 120m,
-                            BmiTop = 95m,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 16,
-                            Name = "Obesity",
-                            ToAge = 100,
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
@@ -325,53 +138,7 @@ namespace InfrastructureLayer.Migrations
                             BmiBottom = 140m,
                             BmiTop = 120m,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 0,
                             Name = "Servere Obesity",
-                            ToAge = 2,
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("92c0c29c-978d-43d5-b58a-3f7fd5ea1d60"),
-                            BmiBottom = 140m,
-                            BmiTop = 120m,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 3,
-                            Name = "Servere Obesity",
-                            ToAge = 5,
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("4aa18090-73ec-4c41-bcfc-3f8b2f144e7e"),
-                            BmiBottom = 140m,
-                            BmiTop = 120m,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 6,
-                            Name = "Servere Obesity",
-                            ToAge = 10,
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("dbbe82b4-ef1e-48b5-a6d5-d479905228d8"),
-                            BmiBottom = 140m,
-                            BmiTop = 120m,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 11,
-                            Name = "Servere Obesity",
-                            ToAge = 15,
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("88e091a4-02ef-404e-9522-0cb7f933f03d"),
-                            BmiBottom = 140m,
-                            BmiTop = 120m,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FromAge = 16,
-                            Name = "Servere Obesity",
-                            ToAge = 100,
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         });
                 });

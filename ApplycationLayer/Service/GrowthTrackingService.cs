@@ -55,11 +55,23 @@ namespace ApplicationLayer.Service
             }
 
 
-            var result = await _growthRepo.WhereAsync(g => g.ChildrentId == childId &&
-                            (!startDate.HasValue || g.CreatedAt >= startDate.Value) &&
-                            (!endDate.HasValue || g.CreatedAt <= endDate.Value));
+            //var result = await _growthRepo
+            //                .WhereAsync(g => g.ChildrentId == childId &&
+            //                (!startDate.HasValue || g.CreatedAt >= startDate.Value) &&
+            //                (!endDate.HasValue || g.CreatedAt <= endDate.Value));
 
-            return SuccessResp.Ok(result);
+            var rawGrowthRecords = await _growthRepo.WhereAsync(g =>
+                    g.ChildrentId == childId &&
+                    (!startDate.HasValue || g.CreatedAt >= startDate.Value) &&
+                    (!endDate.HasValue || g.CreatedAt <= endDate.Value));
+
+            var groupedByDate = rawGrowthRecords
+                .GroupBy(g => g.CreatedAt.GetValueOrDefault().Date)
+                .Select(grp => grp.OrderByDescending(g => g.CreatedAt).First())
+                .OrderBy(g => g.CreatedAt)
+                .ToList();
+
+            return SuccessResp.Ok(groupedByDate);
         }
     }
 }
