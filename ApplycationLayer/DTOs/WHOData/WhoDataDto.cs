@@ -10,6 +10,7 @@ namespace ApplicationLayer.DTOs.WHOData
     public class WhoDataDto
     {
         public int AgeMonth { get; set; }
+        public int BmiPercentile { get; set; }
         public decimal Bmi { get; set; }
         public GenderEnum Gender { get; set; }
     }
