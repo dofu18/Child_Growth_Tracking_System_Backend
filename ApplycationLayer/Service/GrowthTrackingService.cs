@@ -4,18 +4,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.ResponseCode;
+using ApplicationLayer.DTOs.GrowthRecord;
 using AutoMapper;
 using DomainLayer.Entities;
 using InfrastructureLayer.Repository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using static DomainLayer.Enum.GeneralEnum;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ApplicationLayer.Service
 {
     public interface IGrowthTrackingService
     {
         Task<IActionResult> GetGrowthTracking(Guid childId, DateTime? startDate, DateTime? endDate);
+        Task<IActionResult> DeleteGrowthRecord(Guid growthRecordId);
+        Task<IActionResult> GetGrowthTrackingHistory(GrowthTrackingQuery query, Guid childId, DateTime? startDate, DateTime? endDate);
+
 
     }
 
@@ -72,6 +78,88 @@ namespace ApplicationLayer.Service
                 .ToList();
 
             return SuccessResp.Ok(groupedByDate);
+        }
+
+        public async Task<IActionResult> DeleteGrowthRecord(Guid growthRecordId)
+        {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+            var userId = payload.UserId;
+
+            var growthRecord = await _growthRepo.FindAsync(g =>
+                    g.Id == growthRecordId,
+                    nameof(GrowthRecord.Children)
+            );
+
+            if (growthRecord == null)
+            {
+                return ErrorResp.NotFound("Growth record not found");
+            }
+
+            var child = growthRecord.Children;
+            if (child == null)
+            {
+                return ErrorResp.BadRequest("Child information not found");
+            }
+
+            if (child.ParentId != userId)
+            {
+                return ErrorResp.Forbidden("You do not have permission to delete this record");
+            }
+
+            await _growthRepo.DeleteAsync(growthRecord);
+
+            return SuccessResp.Ok("Growth record deleted successfully.");
+        }
+
+        public async Task<IActionResult> GetGrowthTrackingHistory(GrowthTrackingQuery query, Guid childId, DateTime? startDate, DateTime? endDate)
+        {
+            string searchKeyword = query.SearchKeyword ?? "";
+            int page = query.Page < 0 ? 0 : query.Page;
+            int pageSize = query.PageSize <= 0 ? 10 : query.PageSize;
+
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+            var userId = payload.UserId;
+
+            var myChild = await _childRepo.WhereAsync(c => c.ParentId == userId && c.Id == childId);
+
+            if (!myChild.Any())
+            {
+                return ErrorResp.BadRequest("You don't have this children in system!");
+            }
+
+            if (startDate.HasValue && endDate.HasValue && startDate > endDate)
+            {
+                return ErrorResp.BadRequest("Start date cannot be greater than end date");
+            }
+
+
+            var resp = await _growthRepo
+                            .WhereAsync(g => g.ChildrentId == childId &&
+                            (!startDate.HasValue || g.CreatedAt >= startDate.Value) &&
+                            (!endDate.HasValue || g.CreatedAt <= endDate.Value));
+
+            var tracking = resp
+                .Skip(page * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var result = new
+            {
+                Data = tracking,
+                Total = resp.Count,
+                Page = query.Page,
+                PageSize = query.PageSize
+            };
+
+            return SuccessResp.Ok(result);
         }
     }
 }
