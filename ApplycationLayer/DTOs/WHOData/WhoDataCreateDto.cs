@@ -7,12 +7,11 @@ using static DomainLayer.Enum.GeneralEnum;
 
 namespace ApplicationLayer.DTOs.WHOData
 {
-    public class WhoDataUpdateDto
+    public class WhoDataCreateDto
     {
-        public Guid Id { get; set; }
         public int AgeMonth { get; set; }
-        public decimal Bmi { get; set; }
         public int BmiPercentile { get; set; }
+        public decimal Bmi { get; set; }
         public GenderEnum Gender { get; set; }
     }
 }

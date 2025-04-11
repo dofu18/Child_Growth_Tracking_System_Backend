@@ -22,7 +22,7 @@ namespace ControllerLayer.Controllers
 
         [Protected]
         [HttpPost("create")]
-        public async Task<IActionResult> CreateData([FromBody] WhoDataDto dto)
+        public async Task<IActionResult> CreateData([FromBody] WhoDataCreateDto dto)
         {
             if (dto == null)
             {

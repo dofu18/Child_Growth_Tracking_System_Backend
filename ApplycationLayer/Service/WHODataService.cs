@@ -16,7 +16,7 @@ namespace ApplicationLayer.Service
 {
     public interface IWHODataService
     {
-        Task<IActionResult> CreateData(WhoDataDto dto);
+        Task<IActionResult> CreateData(WhoDataCreateDto dto);
         Task<IActionResult> UpdateData(WhoDataUpdateDto dto);
         Task<IActionResult> DeleteData(Guid id);
         Task<IActionResult> GetAllData();
@@ -33,7 +33,7 @@ namespace ApplicationLayer.Service
             _whoDataRepo = whoData;
         }
 
-        public async Task<IActionResult> CreateData(WhoDataDto dto)
+        public async Task<IActionResult> CreateData(WhoDataCreateDto dto)
         {
             var payload = ExtractPayload();
             if (payload == null)
@@ -42,7 +42,10 @@ namespace ApplicationLayer.Service
             }
 
             // Kiểm tra nếu đã tồn tại bản ghi với AgeMonth & Gender
-            var existingData = await _whoDataRepo.FirstOrDefaultAsync(x =>x.AgeMonth == dto.AgeMonth && x.Gender == dto.Gender);
+            var existingData = await _whoDataRepo.FirstOrDefaultAsync(x => 
+                    x.AgeMonth == dto.AgeMonth && 
+                    x.Gender == dto.Gender && 
+                    x.BmiPercentile == dto.BmiPercentile);
 
             if (existingData != null)
             {
