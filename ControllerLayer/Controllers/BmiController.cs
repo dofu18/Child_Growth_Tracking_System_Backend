@@ -61,5 +61,12 @@ namespace ControllerLayer.Controllers
             return Ok(result);
         }
 
+        [Protected]
+        [HttpGet("tracking-history")]
+        public async Task<IActionResult> GrowthTrackingHistory([FromQuery] GrowthTrackingQuery query , Guid childId, DateTime? startDate, DateTime? endDate)
+        {
+            var result = await _growthTrackingService.GetGrowthTrackingHistory(query, childId, startDate, endDate);
+            return Ok(result);
+        }
     }
 }

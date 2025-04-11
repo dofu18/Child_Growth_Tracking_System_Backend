@@ -5,12 +5,15 @@ using System.Text;
 using System.Threading.Tasks;
 using Application.ResponseCode;
 using ApplicationLayer.DTOs.BmiCategory;
+using ApplicationLayer.DTOs.GrowthRecord;
 using AutoMapper;
 using DomainLayer.Entities;
 using InfrastructureLayer.Repository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using static DomainLayer.Enum.GeneralEnum;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ApplicationLayer.Service
 {
@@ -19,6 +22,7 @@ namespace ApplicationLayer.Service
         Task<IActionResult> GetGrowthTracking(Guid childId, DateTime? startDate, DateTime? endDate);
         Task<IActionResult> DeleteGrowthRecord(Guid growthRecordId);
         Task<IActionResult> GetBmiCategoryName(Guid bmiCategoryId);
+        Task<IActionResult> GetGrowthTrackingHistory(GrowthTrackingQuery query, Guid childId, DateTime? startDate, DateTime? endDate);
     }
 
     public class GrowthTrackingService : BaseService, IGrowthTrackingService
@@ -130,6 +134,53 @@ namespace ApplicationLayer.Service
             var dto = _mapper.Map<BmiCategoryDto>(category);
 
             return SuccessResp.Ok(dto);
+        }
+        public async Task<IActionResult> GetGrowthTrackingHistory(GrowthTrackingQuery query, Guid childId, DateTime? startDate, DateTime? endDate)
+        {
+            string searchKeyword = query.SearchKeyword ?? "";
+            int page = query.Page < 0 ? 0 : query.Page;
+            int pageSize = query.PageSize <= 0 ? 10 : query.PageSize;
+
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+
+            var userId = payload.UserId;
+
+            var myChild = await _childRepo.WhereAsync(c => c.ParentId == userId && c.Id == childId);
+
+            if (!myChild.Any())
+            {
+                return ErrorResp.BadRequest("You don't have this children in system!");
+            }
+
+            if (startDate.HasValue && endDate.HasValue && startDate > endDate)
+            {
+                return ErrorResp.BadRequest("Start date cannot be greater than end date");
+            }
+
+
+            var resp = await _growthRepo
+                            .WhereAsync(g => g.ChildrentId == childId &&
+                            (!startDate.HasValue || g.CreatedAt >= startDate.Value) &&
+                            (!endDate.HasValue || g.CreatedAt <= endDate.Value));
+
+            var tracking = resp
+                .Skip(page * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var result = new
+            {
+                Data = tracking,
+                Total = resp.Count,
+                Page = query.Page,
+                PageSize = query.PageSize
+            };
+
+            return SuccessResp.Ok(result);
         }
     }
 }
