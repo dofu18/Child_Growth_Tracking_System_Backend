@@ -36,6 +36,7 @@ namespace ApplicationLayer.Mapper
 
             //BmiCategory
             CreateMap<BmiCategory, BmiCategoryCreateDto>().ReverseMap();
+            CreateMap<BmiCategory, BmiCategoryDto>();
 
             //Children
             CreateMap<Children, ChildrenCreateDto>().ReverseMap();
@@ -82,6 +83,7 @@ namespace ApplicationLayer.Mapper
             //Consultation Request
             CreateMap<ConsultationRequest, ConsultationRequestDto>().ReverseMap();
             CreateMap<ConsultationRequest, ConsultationRequestCreateDto>().ReverseMap();
+
             //Response
             CreateMap<ConsultationResponse, ConsultationResponseDto>().ReverseMap();
             CreateMap<ConsultationResponse, ConsultationResponseCreateDto>().ReverseMap();
