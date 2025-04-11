@@ -91,6 +91,8 @@ namespace ApplicationLayer.Mapper
             //WhoData
             CreateMap<WhoDataDto, WhoData>().ReverseMap();
             CreateMap<WhoDataUpdateDto, WhoData>();
+            CreateMap<WhoDataCreateDto, WhoData>();
+
         }
     }
 }
