@@ -73,6 +73,9 @@ namespace ApplicationLayer.Service
             int ageInMonths = (request.CreatedAt.Year - dob.Year) * 12 + (request.CreatedAt.Month - dob.Month);
             if (request.CreatedAt.Day < dob.Day) ageInMonths--;
 
+            // Tính số tuổi
+            int ageInYears = ageInMonths / 12;
+
             // Kiểm tra nếu tuổi nằm ngoài phạm vi hợp lệ
             if (ageInMonths < 0 || ageInMonths > 240)
             {
@@ -107,14 +110,14 @@ namespace ApplicationLayer.Service
             decimal bmiPercentile = whoData?.BmiPercentile ?? 99;
 
             //Xác định BMI Category
-            var bmiCategory = await _bmiCategoryRepo.FirstOrDefaultAsync(c =>
-                                c.BmiBottom <= bmi &&
-                                c.BmiTop >= bmi &&
-                                c.FromAge <= ageInMonths &&
-                                c.ToAge >= ageInMonths
-            );
+            var allCategories = await _bmiCategoryRepo.WhereAsync(c => c.FromAge <= ageInYears && c.ToAge >= ageInYears);
 
-            if (bmiCategory == null) throw new Exception("BMI Category not found");
+            var bmiCategory = allCategories.FirstOrDefault(c => c.BmiTop >= bmi && c.BmiBottom <= bmi);
+
+            if (bmiCategory == null)
+            {
+                throw new Exception($"Không xác định được phân loại BMI cho BMI = {bmi}, tháng tuổi = {ageInMonths}.");
+            }
 
 
             // Lưu vào bảng GrowthRecord
@@ -152,7 +155,8 @@ namespace ApplicationLayer.Service
                 BmiPercentile = record.BmiPercentile,
                 BmiCategory = bmiCategory.Name,
                 Notes = record.Notes,
-                ageInMonth = ageInMonths
+                ageInMonth = ageInMonths,
+                ageInYear = ageInYears
             };
         }
 
@@ -188,6 +192,9 @@ namespace ApplicationLayer.Service
             int ageInMonths = (request.CreatedAt.Year - dob.Year) * 12 + (request.CreatedAt.Month - dob.Month);
             if (request.CreatedAt.Day < dob.Day) ageInMonths--;
 
+            // Tính số tuổi
+            int ageInYears = ageInMonths / 12;
+
             // Kiểm tra nếu tuổi nằm ngoài phạm vi hợp lệ
             if (ageInMonths < 0 || ageInMonths > 240)
             {
@@ -222,12 +229,9 @@ namespace ApplicationLayer.Service
             decimal bmiPercentile = whoData?.BmiPercentile ?? 99;
 
             //Xác định BMI Category
-            var bmiCategory = await _bmiCategoryRepo.FirstOrDefaultAsync(c =>
-                                c.BmiBottom <= bmi &&
-                                c.BmiTop >= bmi &&
-                                c.FromAge <= ageInMonths &&
-                                c.ToAge >= ageInMonths
-            );
+            var allCategories = await _bmiCategoryRepo.WhereAsync(c => c.FromAge <= ageInYears && c.ToAge >= ageInYears);
+
+            var bmiCategory = allCategories.FirstOrDefault(c => c.BmiTop >= bmi && c.BmiBottom <= bmi);
 
             if (bmiCategory == null) throw new Exception("BMI Category not found");
 
@@ -268,7 +272,8 @@ namespace ApplicationLayer.Service
                 BmiPercentile = record.BmiPercentile,
                 BmiCategory = bmiCategory.Name,
                 Notes = record.Notes,
-                ageInMonth = ageInMonths
+                ageInMonth = ageInMonths,
+                ageInYear = ageInYears
             };
         }
     }
