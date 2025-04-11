@@ -52,5 +52,14 @@ namespace ControllerLayer.Controllers
             var result = await _growthTrackingService.DeleteGrowthRecord(recordId);
             return Ok(result);
         }
+
+        [Protected]
+        [HttpGet("category/{id}")]
+        public async Task<IActionResult> GetBmiCategoryName(Guid id)
+        {
+            var result = await _growthTrackingService.GetBmiCategoryName(id);
+            return Ok(result);
+        }
+
     }
 }
