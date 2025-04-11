@@ -16,5 +16,6 @@ namespace ApplicationLayer.DTOs.GrowthRecord
         public string BmiCategory { get; set; }
         public string Notes { get; set; }
         public int ageInMonth { get; set; }
+        public int ageInYear { get; set; }
     }
 }

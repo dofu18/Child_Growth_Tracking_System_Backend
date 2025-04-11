@@ -54,6 +54,14 @@ namespace ControllerLayer.Controllers
         }
 
         [Protected]
+        [HttpGet("category/{id}")]
+        public async Task<IActionResult> GetBmiCategoryName(Guid id)
+        {
+            var result = await _growthTrackingService.GetBmiCategoryName(id);
+            return Ok(result);
+        }
+
+        [Protected]
         [HttpGet("tracking-history")]
         public async Task<IActionResult> GrowthTrackingHistory([FromQuery] GrowthTrackingQuery query , Guid childId, DateTime? startDate, DateTime? endDate)
         {

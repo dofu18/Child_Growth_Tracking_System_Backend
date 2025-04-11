@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.ResponseCode;
+using ApplicationLayer.DTOs.BmiCategory;
 using ApplicationLayer.DTOs.GrowthRecord;
 using AutoMapper;
 using DomainLayer.Entities;
@@ -20,9 +21,8 @@ namespace ApplicationLayer.Service
     {
         Task<IActionResult> GetGrowthTracking(Guid childId, DateTime? startDate, DateTime? endDate);
         Task<IActionResult> DeleteGrowthRecord(Guid growthRecordId);
+        Task<IActionResult> GetBmiCategoryName(Guid bmiCategoryId);
         Task<IActionResult> GetGrowthTrackingHistory(GrowthTrackingQuery query, Guid childId, DateTime? startDate, DateTime? endDate);
-
-
     }
 
     public class GrowthTrackingService : BaseService, IGrowthTrackingService
@@ -30,13 +30,15 @@ namespace ApplicationLayer.Service
         private readonly IGenericRepository<GrowthRecord> _growthRepo;
         private readonly IGenericRepository<Children> _childRepo;
         private readonly IGenericRepository<User> _userRepo;
+        private readonly IGenericRepository<BmiCategory> _bmiCategoryRepo;
 
         public GrowthTrackingService(IGenericRepository<GrowthRecord> growthRepo, IGenericRepository<Children> childRepo, 
-            IGenericRepository<User> userRepo, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
+            IGenericRepository<User> userRepo, IGenericRepository<BmiCategory> bmiCategoryRepo, IMapper mapper, IHttpContextAccessor httpCtx) : base(mapper, httpCtx)
         {
             _growthRepo = growthRepo;
             _childRepo = childRepo;
             _userRepo = userRepo;
+            _bmiCategoryRepo = bmiCategoryRepo;
         }
 
         public async Task<IActionResult> GetGrowthTracking(Guid childId, DateTime? startDate, DateTime? endDate)
@@ -115,6 +117,24 @@ namespace ApplicationLayer.Service
             return SuccessResp.Ok("Growth record deleted successfully.");
         }
 
+        public async Task<IActionResult> GetBmiCategoryName(Guid bmiCategoryId)
+        {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+
+            var category = await _bmiCategoryRepo.FindByIdAsync(bmiCategoryId);
+            if (category == null)
+            {
+                return ErrorResp.NotFound("BMI Category not found");
+            }
+
+            var dto = _mapper.Map<BmiCategoryDto>(category);
+
+            return SuccessResp.Ok(dto);
+        }
         public async Task<IActionResult> GetGrowthTrackingHistory(GrowthTrackingQuery query, Guid childId, DateTime? startDate, DateTime? endDate)
         {
             string searchKeyword = query.SearchKeyword ?? "";
@@ -126,6 +146,7 @@ namespace ApplicationLayer.Service
             {
                 return ErrorResp.Unauthorized("Invalid token");
             }
+
             var userId = payload.UserId;
 
             var myChild = await _childRepo.WhereAsync(c => c.ParentId == userId && c.Id == childId);
