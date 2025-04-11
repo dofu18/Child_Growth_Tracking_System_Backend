@@ -16,7 +16,7 @@ namespace ApplicationLayer.Service
     public interface IGrowthTrackingService
     {
         Task<IActionResult> GetGrowthTracking(Guid childId, DateTime? startDate, DateTime? endDate);
-
+        Task<IActionResult> DeleteGrowthRecord(Guid growthRecordId);
     }
 
     public class GrowthTrackingService : BaseService, IGrowthTrackingService
@@ -72,6 +72,41 @@ namespace ApplicationLayer.Service
                 .ToList();
 
             return SuccessResp.Ok(groupedByDate);
+        }
+
+        public async Task<IActionResult> DeleteGrowthRecord(Guid growthRecordId)
+        {
+            var payload = ExtractPayload();
+            if (payload == null)
+            {
+                return ErrorResp.Unauthorized("Invalid token");
+            }
+            var userId = payload.UserId;
+
+            var growthRecord = await _growthRepo.FindAsync(g =>
+                    g.Id == growthRecordId,
+                    nameof(GrowthRecord.Children)
+            );
+
+            if (growthRecord == null)
+            {
+                return ErrorResp.NotFound("Growth record not found");
+            }
+
+            var child = growthRecord.Children;
+            if (child == null)
+            {
+                return ErrorResp.BadRequest("Child information not found");
+            }
+
+            if (child.ParentId != userId)
+            {
+                return ErrorResp.Forbidden("You do not have permission to delete this record");
+            }
+
+            await _growthRepo.DeleteAsync(growthRecord);
+
+            return SuccessResp.Ok("Growth record deleted successfully.");
         }
     }
 }
